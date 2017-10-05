@@ -77,8 +77,23 @@ public class StringManipulationTest {
             builder.append(genrePerArtistMap.get(genre));
             builder.append(",");
         }
-        System.out.println("expected: Folk:3,Metal:3,Rap:1,Hip-Hop:1,Rock:1,Country:1,");
-        System.out.println("actual: " + builder.toString());
+
+        String mostTaggedGenre = "";
+        int largest = 0;
+        for (String tagged : genrePerArtistMap.keySet()) {
+            int genreCount = Integer.parseInt(genrePerArtistMap.get(tagged));
+            if (genreCount > largest) {
+                largest = genreCount;
+                mostTaggedGenre = tagged + " tagged " + largest + " times";
+            } else if (genreCount == largest) {
+                mostTaggedGenre += ", " + tagged + " tagged " + largest + " times";
+            }
+        }
+        System.out.println("Expected: Folk tagged 3 times, Metal tagged 3 times");
+        System.out.println("Actual: " + mostTaggedGenre);
+//        System.out.println("expected: Folk:3,Metal:3,Rap:1,Hip-Hop:1,Rock:1,Country:1,");
+//        System.out.println("actual: " + builder.toString());
+
     }
 
     public static void main(String[] args) {

@@ -160,9 +160,9 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
             int genreCount = Integer.parseInt(genrePerArtistMap.get(genre));
             if (genreCount > largest) {
                 largest = genreCount;
-                mostTaggedGenre = genre + " tagged " + largest + " times";
-            } if (genreCount == largest) {
-                mostTaggedGenre += ", " + genre + " tagged " + largest + " times";
+                mostTaggedGenre = genre + " - " + largest;
+            } else if (genreCount == largest) {
+                mostTaggedGenre += ", " + genre + " - " + largest;
             }
         }
 
