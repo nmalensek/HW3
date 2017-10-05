@@ -161,6 +161,8 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
             if (genreCount > largest) {
                 largest = genreCount;
                 mostTaggedGenre = genre + " tagged " + largest + " times";
+            } if (genreCount == largest) {
+                mostTaggedGenre += ", " + genre + " tagged " + largest + " times";
             }
         }
 

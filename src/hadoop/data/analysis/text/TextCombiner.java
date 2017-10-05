@@ -26,7 +26,6 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
     @Override
     protected void reduce(Text key, Iterable<CustomWritable> values, Context context) throws IOException, InterruptedException {
         CustomWritable customWritable = new CustomWritable();
-        Map<String, String> mostPopularGenres = new HashMap<>();
 
         String[] intermediateStringData;
         double totalPopulation = 0;
