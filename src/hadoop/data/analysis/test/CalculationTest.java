@@ -1,7 +1,5 @@
 package hadoop.data.analysis.test;
 
-import hadoop.data.analysis.ranges.HouseRanges;
-
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -94,13 +92,13 @@ public class CalculationTest {
 
     private void medianTest() {
         Map<String, Integer> testMap = new HashMap<>();
-        HouseRanges houseRanges = HouseRanges.getInstance();
+//        HouseRanges houseRanges = HouseRanges.getInstance();
         ArrayList<Integer> sortedList = new ArrayList<>();
-        testMap.put(houseRanges.getRanges()[0], 2001);
-        testMap.put(houseRanges.getRanges()[1], 750);
-        testMap.put(houseRanges.getRanges()[2], 4750);
-        testMap.put(houseRanges.getRanges()[3], 1000);
-        testMap.put(houseRanges.getRanges()[4], 2000);
+//        testMap.put(houseRanges.getRanges()[0], 2001);
+//        testMap.put(houseRanges.getRanges()[1], 750);
+//        testMap.put(houseRanges.getRanges()[2], 4750);
+//        testMap.put(houseRanges.getRanges()[3], 1000);
+//        testMap.put(houseRanges.getRanges()[4], 2000);
 
         for (String key : testMap.keySet()) {
             sortedList.add(testMap.get(key));

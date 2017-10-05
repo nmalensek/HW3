@@ -11,6 +11,7 @@ import java.util.*;
 
 public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     private MultipleOutputs multipleOutputs;
+    private Map<String, String> totalGenreMap = new HashMap<>();
     private List<Double> averageList = new ArrayList<>();
     private Map<Text, Double> elderlyMap = new HashMap<>();
     private Text mostElderlyState = new Text();
@@ -26,23 +27,23 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         multipleOutputs = new MultipleOutputs(context);
         multipleOutputs.write("question1", new Text("\nQuestion 1:\n" +
                 "Most commonly tagged genre per artist"), new Text(" \n"));
-        multipleOutputs.write("question2", new Text("\nQuestion 2:\n" +
-                "Average tempo for all songs in the data set"), new Text(" \n"));
-        multipleOutputs.write("question3", new Text("\nQuestion 3:\n" +
-                "Median danceability score across all songs in the data set"), new Text(" \n"));
-        multipleOutputs.write("question4", new Text("\nQuestion 4:\n" +
-                "Top 10 artists for fast songs (based on tempo)"), new Text(" \n"));
-        multipleOutputs.write("question5", new Text("\nQuestion 5:\n" +
-                "Top 10 songs by hotness per genre"), new Text(" \n"));
-        multipleOutputs.write("question6", new Text("\nQuestion 6:\n" +
-                "Mean loudness variance per year for all songs in the data set"), new Text(" \n"));
+//        multipleOutputs.write("question2", new Text("\nQuestion 2:\n" +
+//                "Average tempo for all songs in the data set"), new Text(" \n"));
+//        multipleOutputs.write("question3", new Text("\nQuestion 3:\n" +
+//                "Median danceability score across all songs in the data set"), new Text(" \n"));
+//        multipleOutputs.write("question4", new Text("\nQuestion 4:\n" +
+//                "Top 10 artists for fast songs (based on tempo)"), new Text(" \n"));
+//        multipleOutputs.write("question5", new Text("\nQuestion 5:\n" +
+//                "Top 10 songs by hotness per genre"), new Text(" \n"));
+//        multipleOutputs.write("question6", new Text("\nQuestion 6:\n" +
+//                "Mean loudness variance per year for all songs in the data set"), new Text(" \n"));
         multipleOutputs.write("question7", new Text("\nQuestion 7:\n" +
                 "Number of songs by each artist"), new Text(" \n"));
-        multipleOutputs.write("question8", new Text("\nQuestion 8:\n" +
-                "Top 10 most popular genres songs in the data set are tagged with"), new Text(" \n"));
-        multipleOutputs.write("question9", new Text("\nQuestion 9:\n" +
-                        "Something awesome"),
-                new Text(" \n"));
+//        multipleOutputs.write("question8", new Text("\nQuestion 8:\n" +
+//                "Top 10 most popular genres songs in the data set are tagged with"), new Text(" \n"));
+//        multipleOutputs.write("question9", new Text("\nQuestion 9:\n" +
+//                        "Something awesome"),
+//                new Text(" \n"));
     }
 
     /**
@@ -77,6 +78,9 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         double averageRooms = 0;
         double elderlyPopulation = 0;
         int songsPerArtist = 0;
+        String[] finalGenreCount;
+        String mostTaggedGenre = "";
+        Map<String, String> genrePerArtistMap = new HashMap<>();
 
         double urbanPopulation = 0;
         double ruralPopulation = 0;
@@ -92,50 +96,72 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         Double[] roomDoubles = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 
         for (CustomWritable cw : values) {
-            totalRent += Double.parseDouble(cw.getQuestionOne().split(":")[0]);
-            totalOwn += Double.parseDouble(cw.getQuestionOne().split(":")[1]);
 
-            totalPopulation += Double.parseDouble(cw.getQuestionTwo().split(":")[0]);
-            totalMalesNeverMarried += Double.parseDouble(cw.getQuestionTwo().split(":")[1]);
-            totalFemalesNeverMarried += Double.parseDouble(cw.getQuestionTwo().split(":")[2]);
+            finalGenreCount = cw.getQuestionOne().split(",");
 
-            totalHispanicPopulation += Double.parseDouble(cw.getQuestionThree().split(":")[0]);
-            hispanicMalesUnder18 += Double.parseDouble(cw.getQuestionThree().split(":")[1]);
-            hispanicMales19to29 += Double.parseDouble(cw.getQuestionThree().split(":")[2]);
-            hispanicMales30to39 += Double.parseDouble(cw.getQuestionThree().split(":")[3]);
-            hispanicFemalesUnder18 += Double.parseDouble(cw.getQuestionThree().split(":")[4]);
-            hispanicFemales19to29 += Double.parseDouble(cw.getQuestionThree().split(":")[5]);
-            hispanicFemales30to39 += Double.parseDouble(cw.getQuestionThree().split(":")[6]);
-
-            ruralHouseholds += Double.parseDouble(cw.getQuestionFour().split(":")[0]);
-            urbanHouseholds += Double.parseDouble(cw.getQuestionFour().split(":")[1]);
-
-            totalHouses += Double.parseDouble(cw.getQuestionFiveTotalHomes());
-            String[] intermediateStringData = cw.getQuestionFiveHomeValues().split(":");
-            for (int i = 0; i < intermediateStringData.length; i++) {
-                homeDoubles[i] += Double.parseDouble(intermediateStringData[i]);
+            for (String genrePair : finalGenreCount) {
+                if (genrePerArtistMap.get(genrePair.split(":")[0]) == null) {
+                    genrePerArtistMap.put(genrePair.split(":")[0], genrePair.split(":")[1]);
+                } else {
+                    int currentCount = Integer.parseInt(genrePerArtistMap.get(genrePair.split(":")[0]));
+                    int newCount = currentCount + Integer.parseInt(genrePair.split(":")[1]);
+                    genrePerArtistMap.put(genrePair.split(":")[0], String.valueOf(newCount));
+                }
             }
 
-            totalRenters += Double.parseDouble(cw.getQuestionSixTotalRenters());
-            intermediateStringData = cw.getQuestionSixRenterValues().split(":");
-            for (int i = 0; i < intermediateStringData.length; i++) {
-                rentDoubles[i] += Double.parseDouble(intermediateStringData[i]);
-            }
+//            totalRent += Double.parseDouble(cw.getQuestionOne().split(":")[0]);
+//            totalOwn += Double.parseDouble(cw.getQuestionOne().split(":")[1]);
+//
+//            totalPopulation += Double.parseDouble(cw.getQuestionTwo().split(":")[0]);
+//            totalMalesNeverMarried += Double.parseDouble(cw.getQuestionTwo().split(":")[1]);
+//            totalFemalesNeverMarried += Double.parseDouble(cw.getQuestionTwo().split(":")[2]);
+//
+//            totalHispanicPopulation += Double.parseDouble(cw.getQuestionThree().split(":")[0]);
+//            hispanicMalesUnder18 += Double.parseDouble(cw.getQuestionThree().split(":")[1]);
+//            hispanicMales19to29 += Double.parseDouble(cw.getQuestionThree().split(":")[2]);
+//            hispanicMales30to39 += Double.parseDouble(cw.getQuestionThree().split(":")[3]);
+//            hispanicFemalesUnder18 += Double.parseDouble(cw.getQuestionThree().split(":")[4]);
+//            hispanicFemales19to29 += Double.parseDouble(cw.getQuestionThree().split(":")[5]);
+//            hispanicFemales30to39 += Double.parseDouble(cw.getQuestionThree().split(":")[6]);
+//
+//            ruralHouseholds += Double.parseDouble(cw.getQuestionFour().split(":")[0]);
+//            urbanHouseholds += Double.parseDouble(cw.getQuestionFour().split(":")[1]);
+//
+//            totalHouses += Double.parseDouble(cw.getQuestionFiveTotalHomes());
+//            String[] intermediateStringData = cw.getQuestionFiveHomeValues().split(":");
+//            for (int i = 0; i < intermediateStringData.length; i++) {
+//                homeDoubles[i] += Double.parseDouble(intermediateStringData[i]);
+//            }
+//
+//            totalRenters += Double.parseDouble(cw.getQuestionSixTotalRenters());
+//            intermediateStringData = cw.getQuestionSixRenterValues().split(":");
+//            for (int i = 0; i < intermediateStringData.length; i++) {
+//                rentDoubles[i] += Double.parseDouble(intermediateStringData[i]);
+//            }
 
             songsPerArtist += Integer.parseInt(cw.getQuestionSeven());
 
-            elderlyPopulation += Double.parseDouble(cw.getQuestionEight().split(":")[0]);
-            elderlyMap.put(key, Double.parseDouble(calculatePercentage(elderlyPopulation, totalPopulation)));
+//            elderlyPopulation += Double.parseDouble(cw.getQuestionEight().split(":")[0]);
+//            elderlyMap.put(key, Double.parseDouble(calculatePercentage(elderlyPopulation, totalPopulation)));
+//
+//            urbanPopulation += Double.parseDouble(cw.getQuestionNine().split(":")[0]);
+//            ruralPopulation += Double.parseDouble(cw.getQuestionNine().split(":")[1]);
+//            childrenUnder1To11 += Double.parseDouble(cw.getQuestionNine().split(":")[2]);
+//            children12To17 += Double.parseDouble(cw.getQuestionNine().split(":")[3]);
+//            hispanicChildrenUnder1To11 += Double.parseDouble(cw.getQuestionNine().split(":")[4]);
+//            hispanicChildren12To17 += Double.parseDouble(cw.getQuestionNine().split(":")[5]);
+//            totalMales += Double.parseDouble(cw.getQuestionNine().split(":")[6]);
+//            totalFemales += Double.parseDouble(cw.getQuestionNine().split(":")[7]);
 
-            urbanPopulation += Double.parseDouble(cw.getQuestionNine().split(":")[0]);
-            ruralPopulation += Double.parseDouble(cw.getQuestionNine().split(":")[1]);
-            childrenUnder1To11 += Double.parseDouble(cw.getQuestionNine().split(":")[2]);
-            children12To17 += Double.parseDouble(cw.getQuestionNine().split(":")[3]);
-            hispanicChildrenUnder1To11 += Double.parseDouble(cw.getQuestionNine().split(":")[4]);
-            hispanicChildren12To17 += Double.parseDouble(cw.getQuestionNine().split(":")[5]);
-            totalMales += Double.parseDouble(cw.getQuestionNine().split(":")[6]);
-            totalFemales += Double.parseDouble(cw.getQuestionNine().split(":")[7]);
+        }
 
+        int largest = 0;
+        for (String genre : genrePerArtistMap.keySet()) {
+            int genreCount = Integer.parseInt(genrePerArtistMap.get(genre));
+            if (genreCount > largest) {
+                largest = genreCount;
+                mostTaggedGenre = genre + " tagged " + largest + " times";
+            }
         }
 
         //put home values into an array so they can be put into a map with the ranges
@@ -149,11 +175,11 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 //        }
 
         //multiply rooms to get total rooms in state for average calculation
-        for (int i = 0; i < roomDoubles.length; i++) {
-            roomDoubles[i] = (roomDoubles[i] * (i+1));
-        }
-
-        DecimalFormat dF = new DecimalFormat("##.00");
+//        for (int i = 0; i < roomDoubles.length; i++) {
+//            roomDoubles[i] = (roomDoubles[i] * (i+1));
+//        }
+//
+//        DecimalFormat dF = new DecimalFormat("##.00");
 //        double average = calculateAverageRooms(roomDoubles, totalRooms);
 //        if (!Double.isNaN(average) && !Double.isInfinite(average)) {
 //            double formattedAverage = Double.parseDouble(dF.format(average));
@@ -161,42 +187,41 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 //        } else {
 //            averageRooms = 0;
 //        }
-//
-        if (averageRooms != 0) {
-            averageList.add(averageRooms);
-        }
+////
+//        if (averageRooms != 0) {
+//            averageList.add(averageRooms);
+//        }
 
         //write answers for each artist
 
         multipleOutputs.write("question1", key, new Text(
-                " rent: " + calculatePercentage(totalRent, (totalRent + totalOwn)) + "% | own: "
-                        + calculatePercentage(totalOwn, (totalRent + totalOwn)) + "%"));
+                " " + mostTaggedGenre));
 
-        multipleOutputs.write("question2", key, new Text(
-                " Males: " +
-                        calculatePercentage(totalMalesNeverMarried, totalPopulation)
-                        + "% | Females: " +
-                        calculatePercentage(totalFemalesNeverMarried, totalPopulation) + "%"));
-
-        multipleOutputs.write("question3a", key, new Text(
-                " Males: " + calculatePercentage(hispanicMalesUnder18, totalHispanicPopulation) +
-                        "% | Females: " + calculatePercentage(hispanicFemalesUnder18, totalHispanicPopulation) +
-                        "%"));
-
-        multipleOutputs.write("question3b", key, new Text(
-                " Males: " + calculatePercentage(hispanicMales19to29, totalHispanicPopulation) +
-                        "% | Females: " + calculatePercentage(hispanicFemales19to29, totalHispanicPopulation) +
-                        "%"));
-
-        multipleOutputs.write("question3c", key, new Text(
-                " Males: " + calculatePercentage(hispanicMales30to39, totalHispanicPopulation) +
-                        "% | Females: " + calculatePercentage(hispanicFemales30to39, totalHispanicPopulation) +
-                        "%"));
-
-        multipleOutputs.write("question4", key, new Text(
-                " Rural: " + calculatePercentage(ruralHouseholds, (ruralHouseholds + urbanHouseholds)) +
-                        "% | Urban: " + calculatePercentage(urbanHouseholds, (ruralHouseholds + urbanHouseholds)) +
-                        "%"));
+//        multipleOutputs.write("question2", key, new Text(
+//                " Males: " +
+//                        calculatePercentage(totalMalesNeverMarried, totalPopulation)
+//                        + "% | Females: " +
+//                        calculatePercentage(totalFemalesNeverMarried, totalPopulation) + "%"));
+//
+//        multipleOutputs.write("question3a", key, new Text(
+//                " Males: " + calculatePercentage(hispanicMalesUnder18, totalHispanicPopulation) +
+//                        "% | Females: " + calculatePercentage(hispanicFemalesUnder18, totalHispanicPopulation) +
+//                        "%"));
+//
+//        multipleOutputs.write("question3b", key, new Text(
+//                " Males: " + calculatePercentage(hispanicMales19to29, totalHispanicPopulation) +
+//                        "% | Females: " + calculatePercentage(hispanicFemales19to29, totalHispanicPopulation) +
+//                        "%"));
+//
+//        multipleOutputs.write("question3c", key, new Text(
+//                " Males: " + calculatePercentage(hispanicMales30to39, totalHispanicPopulation) +
+//                        "% | Females: " + calculatePercentage(hispanicFemales30to39, totalHispanicPopulation) +
+//                        "%"));
+//
+//        multipleOutputs.write("question4", key, new Text(
+//                " Rural: " + calculatePercentage(ruralHouseholds, (ruralHouseholds + urbanHouseholds)) +
+//                        "% | Urban: " + calculatePercentage(urbanHouseholds, (ruralHouseholds + urbanHouseholds)) +
+//                        "%"));
 
 //        multipleOutputs.write("question5", key, new Text(
 //                " " + calculateMedian(houseRangeMap, houseRanges.getRanges(), totalHouses)));
@@ -206,22 +231,22 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 
         multipleOutputs.write("question7", key, new Text(" " + songsPerArtist + " songs"));
 
-        multipleOutputs.write("question9", key, new Text(
-                calculatePercentage(urbanPopulation, totalPopulation) + ":" +
-                        calculatePercentage(ruralPopulation, totalPopulation) +
-                        ":" + calculatePercentage(childrenUnder1To11, totalPopulation) +
-                        ":" + calculatePercentage(children12To17, totalPopulation) +
-                        ":" + calculatePercentage(hispanicChildrenUnder1To11, totalPopulation) +
-                        ":" + calculatePercentage(hispanicChildren12To17, totalPopulation) +
-                        ":" + calculatePercentage(totalMales, totalPopulation) +
-                        ":" + calculatePercentage(totalFemales, totalPopulation)));
+//        multipleOutputs.write("question9", key, new Text(
+//                calculatePercentage(urbanPopulation, totalPopulation) + ":" +
+//                        calculatePercentage(ruralPopulation, totalPopulation) +
+//                        ":" + calculatePercentage(childrenUnder1To11, totalPopulation) +
+//                        ":" + calculatePercentage(children12To17, totalPopulation) +
+//                        ":" + calculatePercentage(hispanicChildrenUnder1To11, totalPopulation) +
+//                        ":" + calculatePercentage(hispanicChildren12To17, totalPopulation) +
+//                        ":" + calculatePercentage(totalMales, totalPopulation) +
+//                        ":" + calculatePercentage(totalFemales, totalPopulation)));
 
 //        stateWithMostElderlyPeople(elderlyMap);
     }
 
     /**
      * Close multiple outputs, otherwise the results might not be written to output files.
-     * Also writes questions 2 and 3 because the answer only contains one data point.
+     * Also writes questions 2, 3, and 8 because the answer isn't per key (artist).
      * @param context MapReduce context
      * @throws IOException
      * @throws InterruptedException
@@ -232,6 +257,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 //                calculateNinetyFifthPercentile(averageList) + " rooms"));
 //        multipleOutputs.write("question3", mostElderlyState, new Text(
 //                " " + currentMax + "%"));
+//        multipleOutputs.write("question8", "", new Text());
         super.cleanup(context);
         multipleOutputs.close();
     }

@@ -6,6 +6,7 @@ import org.apache.hadoop.io.WritableUtils;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.HashMap;
 
 public class CustomWritable implements Writable {
 
@@ -34,17 +35,17 @@ public class CustomWritable implements Writable {
     @Override
     public void readFields(DataInput dataInput) throws IOException {
         questionOne = WritableUtils.readString(dataInput);
-        questionTwo = WritableUtils.readString(dataInput);
-        questionTwoTotalSongs = WritableUtils.readString(dataInput);
-        questionThree = WritableUtils.readString(dataInput);
-        questionFour = WritableUtils.readString(dataInput);
-        questionFiveTotalHomes = WritableUtils.readString(dataInput);
-        questionFiveHomeValues = WritableUtils.readString(dataInput);
-        questionSixTotalRenters = WritableUtils.readString(dataInput);
-        questionSixRenterValues = WritableUtils.readString(dataInput);
+//        questionTwo = WritableUtils.readString(dataInput);
+//        questionTwoTotalSongs = WritableUtils.readString(dataInput);
+//        questionThree = WritableUtils.readString(dataInput);
+//        questionFour = WritableUtils.readString(dataInput);
+//        questionFiveTotalHomes = WritableUtils.readString(dataInput);
+//        questionFiveHomeValues = WritableUtils.readString(dataInput);
+//        questionSixTotalRenters = WritableUtils.readString(dataInput);
+//        questionSixRenterValues = WritableUtils.readString(dataInput);
         questionSeven = WritableUtils.readString(dataInput);
-        questionEight = WritableUtils.readString(dataInput);
-        questionNine = WritableUtils.readString(dataInput);
+//        questionEight = WritableUtils.readString(dataInput);
+//        questionNine = WritableUtils.readString(dataInput);
     }
 
     /**
@@ -56,17 +57,17 @@ public class CustomWritable implements Writable {
     @Override
     public void write(DataOutput dataOutput) throws IOException {
         WritableUtils.writeString(dataOutput, questionOne);
-        WritableUtils.writeString(dataOutput, questionTwo);
-        WritableUtils.writeString(dataOutput, questionTwoTotalSongs);
-        WritableUtils.writeString(dataOutput, questionThree);
-        WritableUtils.writeString(dataOutput, questionFour);
-        WritableUtils.writeString(dataOutput, questionFiveTotalHomes);
-        WritableUtils.writeString(dataOutput, questionFiveHomeValues);
-        WritableUtils.writeString(dataOutput, questionSixTotalRenters);
-        WritableUtils.writeString(dataOutput, questionSixRenterValues);
+//        WritableUtils.writeString(dataOutput, questionTwo);
+//        WritableUtils.writeString(dataOutput, questionTwoTotalSongs);
+//        WritableUtils.writeString(dataOutput, questionThree);
+//        WritableUtils.writeString(dataOutput, questionFour);
+//        WritableUtils.writeString(dataOutput, questionFiveTotalHomes);
+//        WritableUtils.writeString(dataOutput, questionFiveHomeValues);
+//        WritableUtils.writeString(dataOutput, questionSixTotalRenters);
+//        WritableUtils.writeString(dataOutput, questionSixRenterValues);
         WritableUtils.writeString(dataOutput, questionSeven);
-        WritableUtils.writeString(dataOutput, questionEight);
-        WritableUtils.writeString(dataOutput, questionNine);
+//        WritableUtils.writeString(dataOutput, questionEight);
+//        WritableUtils.writeString(dataOutput, questionNine);
     }
 
     public String getQuestionOne() {return questionOne;}
