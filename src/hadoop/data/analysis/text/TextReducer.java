@@ -3,6 +3,7 @@ package hadoop.data.analysis.text;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+import org.apache.hadoop.util.hash.Hash;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -11,7 +12,8 @@ import java.util.*;
 
 public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     private MultipleOutputs multipleOutputs;
-    private Map<String, String> totalGenreMap = new HashMap<>();
+    private HashMap<String, String> totalGenreMap = new HashMap<>();
+    private String totalGenreCount = "";
     private List<Double> averageList = new ArrayList<>();
     private Map<Text, Double> elderlyMap = new HashMap<>();
     private Text mostElderlyState = new Text();
@@ -39,8 +41,8 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 //                "Mean loudness variance per year for all songs in the data set"), new Text(" \n"));
         multipleOutputs.write("question7", new Text("\nQuestion 7:\n" +
                 "Number of songs by each artist"), new Text(" \n"));
-//        multipleOutputs.write("question8", new Text("\nQuestion 8:\n" +
-//                "Top 10 most popular genres songs in the data set are tagged with"), new Text(" \n"));
+        multipleOutputs.write("question8", new Text("\nQuestion 8:\n" +
+                "Top 10 most popular genres songs in the data set are tagged with"), new Text(" \n"));
 //        multipleOutputs.write("question9", new Text("\nQuestion 9:\n" +
 //                        "Something awesome"),
 //                new Text(" \n"));
@@ -79,9 +81,11 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         double elderlyPopulation = 0;
         int songsPerArtist = 0;
         String[] finalGenreCount;
+        String[] q8TotalGenreCount;
         String mostTaggedGenre = "";
-        Map<String, String> genrePerArtistMap = new HashMap<>();
+        HashMap<String, String> genrePerArtistMap = new HashMap<>();
 
+        String[] totalGenreString;
         double urbanPopulation = 0;
         double ruralPopulation = 0;
         double childrenUnder1To11 = 0;
@@ -99,15 +103,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 
             finalGenreCount = cw.getQuestionOne().split(",");
 
-            for (String genrePair : finalGenreCount) {
-                if (genrePerArtistMap.get(genrePair.split(":")[0]) == null) {
-                    genrePerArtistMap.put(genrePair.split(":")[0], genrePair.split(":")[1]);
-                } else {
-                    int currentCount = Integer.parseInt(genrePerArtistMap.get(genrePair.split(":")[0]));
-                    int newCount = currentCount + Integer.parseInt(genrePair.split(":")[1]);
-                    genrePerArtistMap.put(genrePair.split(":")[0], String.valueOf(newCount));
-                }
-            }
+            loopThroughArray(finalGenreCount, genrePerArtistMap);
 
 //            totalRent += Double.parseDouble(cw.getQuestionOne().split(":")[0]);
 //            totalOwn += Double.parseDouble(cw.getQuestionOne().split(":")[1]);
@@ -141,6 +137,10 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 
             songsPerArtist += Integer.parseInt(cw.getQuestionSeven());
 
+            q8TotalGenreCount = cw.getQuestionEight().split(",");
+
+            loopThroughArray(q8TotalGenreCount, totalGenreMap);
+
 //            elderlyPopulation += Double.parseDouble(cw.getQuestionEight().split(":")[0]);
 //            elderlyMap.put(key, Double.parseDouble(calculatePercentage(elderlyPopulation, totalPopulation)));
 //
@@ -155,16 +155,28 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 
         }
 
-        int largest = 0;
+        //question 1 determine largest
+        double largest = 0;
         for (String genre : genrePerArtistMap.keySet()) {
-            int genreCount = Integer.parseInt(genrePerArtistMap.get(genre));
+            double genreCount = Double.parseDouble(genrePerArtistMap.get(genre));
             if (genreCount > largest) {
                 largest = genreCount;
                 mostTaggedGenre = genre + " - " + largest;
             } else if (genreCount == largest) {
-                mostTaggedGenre += ", " + genre + " - " + largest;
+                mostTaggedGenre += ", " + genre + " - " + genrePerArtistMap.get(genre);
             }
         }
+
+        //question 8 determine top 10
+        LinkedList<String> topTenList = new LinkedList<>();
+        StringBuilder builder = new StringBuilder();
+        for (String tag : totalGenreMap.keySet()) {
+            builder.append(tag);
+            builder.append(" - ");
+            builder.append(totalGenreMap.get(tag));
+            builder.append("\n");
+        }
+        totalGenreCount = builder.toString();
 
         //put home values into an array so they can be put into a map with the ranges
 //        for (int i = 0; i < 20; i++) {
@@ -259,7 +271,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 //                calculateNinetyFifthPercentile(averageList) + " rooms"));
 //        multipleOutputs.write("question3", mostElderlyState, new Text(
 //                " " + currentMax + "%"));
-//        multipleOutputs.write("question8", "", new Text());
+        multipleOutputs.write("question8", "", new Text(totalGenreCount));
         super.cleanup(context);
         multipleOutputs.close();
     }
@@ -279,6 +291,26 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
             return "N/A";
         } else {
             return decimalFormat.format(percentage);
+        }
+    }
+
+    private void loopThroughArray(String[] stringArray, HashMap<String, String> stringMap) {
+        for (String genrePair : stringArray) {
+            try {
+                String genreTag = genrePair.split(":")[0];
+                double genreCount = Double.parseDouble(genrePair.split(":")[1]);
+
+                if (stringMap.get(genreTag) == null) {
+                    stringMap.put(genreTag, String.valueOf(genreCount));
+                } else {
+                    double currentCount = Double.parseDouble(stringMap.get(genreTag));
+                    double newCount = (currentCount + genreCount);
+                    stringMap.put(genreTag, String.valueOf(newCount));
+                }
+            } catch (ArrayIndexOutOfBoundsException e) {
+
+            }
+
         }
     }
 

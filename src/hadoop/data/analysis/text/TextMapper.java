@@ -15,8 +15,9 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
     /**
      * Map program that splits text files and extracts relevant text values. Values are then set
      * per question in a custom Writable object (CustomWritable).
-     * @param key state
-     * @param value text value of specified substring
+     *
+     * @param key     state
+     * @param value   text value of specified substring
      * @param context MapReduce context
      * @throws IOException
      * @throws InterruptedException
@@ -32,8 +33,11 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             String line = itr.nextToken();
             String[] splitLine = line.split("\t");
             String artist = splitLine[11];
+            StringBuilder builder = new StringBuilder();
 
-            if (line.split("\t")[0].equals("analysis_sample_rate")) {
+            try {
+                Integer.parseInt(splitLine[0]);
+            } catch (NumberFormatException e) {
                 continue; //this is the first line in the file and only has header information, skip it
             }
 
@@ -41,18 +45,31 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             String genreTags = splitLine[13];
             genreTags = genreTags.replaceAll("[\\[\\]\"]", "");
             String[] genreArray = genreTags.split(",");
-            StringBuilder builder = new StringBuilder();
-            for (String genre : genreArray) {
-                builder.append(genre);
-                builder.append(":");
-                builder.append("1");
-                builder.append(",");
+
+            String tagFrequency = splitLine[14];
+            tagFrequency = tagFrequency.replaceAll("[\\[\\]]", "");
+            String[] tagFrequencyArray = tagFrequency.split(",");
+
+            String mostCommonTag = "";
+
+            for (int i = 0; i < tagFrequencyArray.length; i++) {
+                try {
+                    if (Double.parseDouble(tagFrequencyArray[i]) == 1.0) {
+                        builder.append(genreArray[i]);
+                        builder.append(":");
+                        builder.append(1.0);
+                        builder.append(",");
+                    }
+
+                } catch (NumberFormatException e) {
+                    //skips files with malformed data
+                }
             }
 
             customWritable.setQuestionOne(builder.toString());
+            builder.delete(0, builder.length());
 
-            //question 8: What are the top ten most popular terms (genres) that songs in the data set have been tagged with?
-            customWritable.setQuestionEight(builder.toString());
+
 //
 //                //question 2 What is the average tempo across all the songs in the data set?
 //                int totalSongs = 1;
@@ -87,9 +104,31 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
 //                String rentVsOwn = rent + ":" + own;
 //                customWritable.setQuestionOne(rentVsOwn);
 
-                //question 7: How many songs does each artist have in this data set?
-                String songsPerArtist = "1";
-                customWritable.setQuestionSeven(songsPerArtist);
+            //question 7: How many songs does each artist have in this data set?
+            String songsPerArtist = "1";
+            customWritable.setQuestionSeven(songsPerArtist);
+
+//            question 8: What are the top ten most popular terms (genres) that songs in the data set have been tagged with?
+            String mbGenreTags = splitLine[9];
+            mbGenreTags = mbGenreTags.replaceAll("[\\[\\]\"]", "");
+            String[] mbArray;
+            if (!mbGenreTags.isEmpty()) {
+                mbArray = mbGenreTags.split(",");
+                for (String mbTag : mbArray) {
+                    builder.append(mbTag);
+                    builder.append(":");
+                    builder.append("1");
+                }
+            }
+            for (String s : genreArray) {
+                builder.append(s);
+                builder.append(":");
+                builder.append("1");
+            }
+
+            customWritable.setQuestionEight(builder.toString());
+            builder.delete(0, builder.length());
+
 
 //                int houseValueStartPosition = 2928;
 //                int totalHomes = 0;

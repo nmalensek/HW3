@@ -1,9 +1,6 @@
 package hadoop.data.analysis.test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class StringManipulationTest {
 
@@ -24,15 +21,21 @@ public class StringManipulationTest {
         System.out.println(builder.toString());
     }
 
-    private void genreProcessing() {
+    private ArrayList<String> createList() {
+        ArrayList<String> stringList = new ArrayList<>();
         String intermediateStringData = "Folk:1,Rock:1,Country:1,Metal:1,";
-        List<String> stringList = new ArrayList<>();
         String oneStringData = "Folk:1,Metal:1,";
         String twoStringData = "Folk:1,Rap:1,Metal:1,Hip-Hop:1,";
         stringList.add(oneStringData);
         stringList.add(twoStringData);
         stringList.add(intermediateStringData);
 
+        return stringList;
+    }
+
+    private void genreProcessing() {
+
+        ArrayList<String> stringList = createList();
         StringBuilder builder = new StringBuilder();
         Map<String, String> genrePerArtistMap = new HashMap<>();
 //        List<String> taggedGenres = new ArrayList<>();
@@ -96,10 +99,62 @@ public class StringManipulationTest {
 
     }
 
+    private void getAllGenres() {
+        ArrayList<String> testList = createList();
+        HashMap<String, String> testMap = new HashMap<>();
+
+        for (String s : testList) {
+            String[] chunk = s.split(",");
+            loopThroughArray(chunk, testMap);
+        }
+
+        System.out.println("expected: Folk:3,Metal:3,Rap:1,Hip-Hop:1,Rock:1,Country:1,");
+        System.out.println("Actual:");
+        for (String data : testMap.keySet()) {
+            System.out.println(data + ":" + testMap.get(data));
+        }
+    }
+
+
+    private void loopThroughArray(String[] stringArray, HashMap<String, String> stringMap) {
+        for (String genrePair : stringArray) {
+            String genreTag = genrePair.split(":")[0];
+            int genreCount = Integer.parseInt(genrePair.split(":")[1]);
+
+            if (stringMap.get(genreTag) == null) {
+                stringMap.put(genreTag, String.valueOf(genreCount));
+            } else {
+                int currentCount = Integer.parseInt(stringMap.get(genreTag));
+                int newCount = (currentCount + genreCount);
+                stringMap.put(genreTag, String.valueOf(newCount));
+            }
+        }
+    }
+
+    private void testResetAndReplace() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("testetstetestestesttteset");
+        builder.delete(0, builder.length());
+        System.out.println(builder.toString());
+
+        String emptyArray = "[]";
+        emptyArray = emptyArray.replaceAll("[\\[\\]\"]", "");
+        if (emptyArray.isEmpty()) {
+            System.out.println(emptyArray);
+            System.out.println("empty");
+        }
+
+        String splitTest = "test,34,532,";
+        String[] testsplit = splitTest.split(",");
+        System.out.println(Arrays.toString(testsplit));
+    }
+
     public static void main(String[] args) {
         StringManipulationTest stringManipulationTest = new StringManipulationTest();
 //        stringManipulationTest.removeBrackets();
 //        stringManipulationTest.stringBuilder();
-        stringManipulationTest.genreProcessing();
+//        stringManipulationTest.genreProcessing();
+//        stringManipulationTest.getAllGenres();
+        stringManipulationTest.testResetAndReplace();
     }
 }

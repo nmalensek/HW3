@@ -54,7 +54,9 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
         Double[] rentDoubles = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
         StringBuilder intermediateQuestionOne = new StringBuilder();
+        StringBuilder intermediateQuestionEight = new StringBuilder();
         Map<String, String> genrePerArtistMap = new HashMap<>();
+        Map<String, String> questionEightMap = new HashMap<>();
 
         int songsPerArtist = 0;
 
@@ -74,12 +76,19 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
             intermediateStringData = cw.getQuestionOne().split(",");
 
             for (String genrePair : intermediateStringData) {
-                if (genrePerArtistMap.get(genrePair.split(":")[0]) == null) {
-                    genrePerArtistMap.put(genrePair.split(":")[0], genrePair.split(":")[1]);
-                } else {
-                    int currentCount = Integer.parseInt(genrePerArtistMap.get(genrePair.split(":")[0]));
-                    int newCount = currentCount + Integer.parseInt(genrePair.split(":")[1]);
-                    genrePerArtistMap.put(genrePair.split(":")[0], String.valueOf(newCount));
+                try {
+                    String genreTag = genrePair.split(":")[0];
+                    double genreCount = Double.parseDouble(genrePair.split(":")[1]);
+
+                    if (genrePerArtistMap.get(genreTag) == null) {
+                        genrePerArtistMap.put(genreTag, String.valueOf(genreCount));
+                    } else {
+                        double currentCount = Double.parseDouble(genrePerArtistMap.get(genreTag));
+                        double newCount = (currentCount + genreCount);
+                        genrePerArtistMap.put(genreTag, String.valueOf(newCount));
+                    }
+                } catch (IndexOutOfBoundsException e) {
+
                 }
             }
             for (String genre : genrePerArtistMap.keySet()) {
@@ -124,6 +133,31 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 //            }
 
             songsPerArtist += Integer.parseInt(cw.getQuestionSeven());
+
+            intermediateStringData = cw.getQuestionEight().split(",");
+
+            for (String allGenrePairs : intermediateStringData) {
+                try {
+                    String genreTag = allGenrePairs.split(":")[0];
+                    double genreCount = Double.parseDouble(allGenrePairs.split(":")[1]);
+
+                    if (questionEightMap.get(genreTag) == null) {
+                        questionEightMap.put(genreTag, String.valueOf(genreCount));
+                    } else {
+                        double currentCount = Double.parseDouble(questionEightMap.get(genreTag));
+                        double newCount = (currentCount + genreCount);
+                        questionEightMap.put(genreTag, String.valueOf(newCount));
+                    }
+                } catch (IndexOutOfBoundsException e) {
+
+                }
+            }
+            for (String genre : questionEightMap.keySet()) {
+                intermediateQuestionEight.append(genre);
+                intermediateQuestionEight.append(":");
+                intermediateQuestionEight.append(questionEightMap.get(genre));
+                intermediateQuestionEight.append(",");
+            }
 
 //            intermediateStringData = cw.getQuestionEight().split(":");
 //            elderlyPopulation += Double.parseDouble(intermediateStringData[0]);
