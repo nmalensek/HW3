@@ -132,8 +132,10 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 //                rentDoubles[i] += Double.parseDouble(intermediateStringData[i]);
 //            }
 
+            //question 7
             songsPerArtist += Integer.parseInt(cw.getQuestionSeven());
 
+            //question 8
             intermediateStringData = cw.getQuestionEight().split(",");
 
             for (String allGenrePairs : intermediateStringData) {
@@ -197,7 +199,7 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
         //q7
         customWritable.setQuestionSeven(String.valueOf(songsPerArtist));
 //        //q8
-//        customWritable.setQuestionEight(elderlyPopulation + ":" + totalPopulation);
+        customWritable.setQuestionEight(intermediateQuestionEight.toString());
 //        //q9
 //        customWritable.setQuestionNine(urbanPopulation + ":" + ruralPopulation + ":" + childrenUnder1To11 + ":" +
 //        children12To17 + ":" + hispanicChildrenUnder1To11 + ":" + hispanicChildren12To17 + ":" + totalMales +

@@ -44,7 +44,7 @@ public class CustomWritable implements Writable {
 //        questionSixTotalRenters = WritableUtils.readString(dataInput);
 //        questionSixRenterValues = WritableUtils.readString(dataInput);
         questionSeven = WritableUtils.readString(dataInput);
-//        questionEight = WritableUtils.readString(dataInput);
+        questionEight = WritableUtils.readString(dataInput);
 //        questionNine = WritableUtils.readString(dataInput);
     }
 
@@ -66,7 +66,7 @@ public class CustomWritable implements Writable {
 //        WritableUtils.writeString(dataOutput, questionSixTotalRenters);
 //        WritableUtils.writeString(dataOutput, questionSixRenterValues);
         WritableUtils.writeString(dataOutput, questionSeven);
-//        WritableUtils.writeString(dataOutput, questionEight);
+        WritableUtils.writeString(dataOutput, questionEight);
 //        WritableUtils.writeString(dataOutput, questionNine);
     }
 

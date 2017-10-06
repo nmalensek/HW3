@@ -118,12 +118,14 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
                     builder.append(mbTag);
                     builder.append(":");
                     builder.append("1");
+                    builder.append(",");
                 }
             }
             for (String s : genreArray) {
                 builder.append(s);
                 builder.append(":");
                 builder.append("1");
+                builder.append(",");
             }
 
             customWritable.setQuestionEight(builder.toString());
