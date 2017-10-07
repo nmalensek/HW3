@@ -13,6 +13,8 @@ import java.util.*;
 public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     private MultipleOutputs multipleOutputs;
     private HashMap<String, String> totalGenreMap = new HashMap<>();
+    double totalTempo = 0.0;
+    double totalSongsWithTempo = 0.0;
     private HashMap<String, String> fastSongsMap = new HashMap<>();
     private List<Double> averageList = new ArrayList<>();
     private Map<Text, Double> elderlyMap = new HashMap<>();
@@ -30,8 +32,8 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         multipleOutputs = new MultipleOutputs(context);
         multipleOutputs.write("question1", new Text("\nQuestion 1:\n" +
                 "Most commonly tagged genre per artist"), new Text(" \n"));
-//        multipleOutputs.write("question2", new Text("\nQuestion 2:\n" +
-//                "Average tempo for all songs in the data set"), new Text(" \n"));
+        multipleOutputs.write("question2", new Text("\nQuestion 2:\n" +
+                "Average tempo for all songs in the data set"), new Text(" \n"));
 //        multipleOutputs.write("question3", new Text("\nQuestion 3:\n" +
 //                "Median danceability score across all songs in the data set"), new Text(" \n"));
         multipleOutputs.write("question4", new Text("\nQuestion 4:\n" +
@@ -62,14 +64,15 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 
     @Override
     protected void reduce(Text key, Iterable<CustomWritable> values, Context context) throws IOException, InterruptedException {
+        String[] finalGenreCount;
+        String mostTaggedGenre = "";
+
         double totalRent = 0;
         double totalOwn = 0;
         double totalPopulation = 0;
         int fastSongsPerArtist = 0;
         int songsPerArtist = 0;
-        String[] finalGenreCount;
         String[] q8TotalGenreCount;
-        String mostTaggedGenre = "";
         HashMap<String, String> genrePerArtistMap = new HashMap<>();
 
         String[] totalGenreString;
@@ -88,9 +91,16 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 
         for (CustomWritable cw : values) {
 
+            //question one
             finalGenreCount = cw.getQuestionOne().split(",");
 
             loopThroughArray(finalGenreCount, genrePerArtistMap);
+
+            //question two
+            if (!cw.getQuestionTwo().isEmpty()) {
+                totalTempo += Double.parseDouble(cw.getQuestionTwo().split(":")[0]);
+                totalSongsWithTempo += Integer.parseInt(cw.getQuestionTwo().split(":")[1]);
+            }
 
 //            totalRent += Double.parseDouble(cw.getQuestionOne().split(":")[0]);
 //            totalOwn += Double.parseDouble(cw.getQuestionOne().split(":")[1]);
@@ -243,8 +253,8 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
      */
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
-//        multipleOutputs.write("question2", "", new Text(
-//                calculateNinetyFifthPercentile(averageList) + " rooms"));
+        multipleOutputs.write("question2", "", new Text(
+                "\n" + calculateAverage(totalTempo, totalSongsWithTempo)));
 //        multipleOutputs.write("question3", mostElderlyState, new Text(
 //                " " + currentMax + "%"));
         multipleOutputs.write("question4", "", new Text("\n" + questionFour()));
@@ -270,6 +280,13 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         } else {
             return decimalFormat.format(percentage);
         }
+    }
+
+    private String calculateAverage(double numerator, double denominator) {
+        DecimalFormat decimalFormat = new DecimalFormat("##.00");
+        double average = (numerator / denominator);
+
+        return decimalFormat.format(average);
     }
 
     private void loopThroughArray(String[] stringArray, HashMap<String, String> stringMap) {

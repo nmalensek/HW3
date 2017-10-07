@@ -42,15 +42,21 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             }
 
             //question 1: For each artist, what is the most commonly tagged genre?
-            String genreTags = splitLine[13];
+            String genreTags = "";
+            String tagFrequency = "";
+            if (splitLine[13].startsWith("\"[\"\"")) {
+                genreTags = splitLine[13];
+                tagFrequency = splitLine[14];
+            } else if (splitLine[14].startsWith("\"[\"\"")) {
+                genreTags = splitLine[14];
+                tagFrequency = splitLine[15];
+            }
+
             genreTags = genreTags.replaceAll("[\\[\\]\"]", "");
             String[] genreArray = genreTags.split(",");
 
-            String tagFrequency = splitLine[14];
             tagFrequency = tagFrequency.replaceAll("[\\[\\]]", "");
             String[] tagFrequencyArray = tagFrequency.split(",");
-
-            String mostCommonTag = "";
 
             for (int i = 0; i < tagFrequencyArray.length; i++) {
                 try {
@@ -70,14 +76,17 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             builder.delete(0, builder.length());
 
 
-//
-//                //question 2 What is the average tempo across all the songs in the data set?
-//                int totalSongs = 1;
-//                int tempoScore = Integer.parseInt(line.split("\t")[47]);
-//
-//                String tempo = totalSongs + ":" + tempoScore;
-//                customWritable.setQuestionTwo(tempo);
-//
+            //question 2 What is the average tempo across all the songs in the data set?
+            String tempoScore = "N/A";
+            String totalSongs = "N/A";
+
+            if (!splitLine[47].startsWith("[")) {
+                Double.parseDouble(splitLine[47]);
+                tempoScore = splitLine[47];
+                totalSongs = "1";
+            }
+            customWritable.setQuestionTwo(tempoScore + ":" + totalSongs);
+
 //                //question 3 What is the median danceability score across all the songs in the data set?
 //                int hispanicFemalesUnder18 = 0;
 //                int hispanicFemaleStartPosition = 4143;
@@ -89,7 +98,7 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
 //                String femalesUnder18 = String.valueOf(hispanicFemalesUnder18);
 //
 //
-//                //question 4 Who are the top ten artists for fast songs (based on their tempo)?
+            //question 4 Who are the top ten artists for fast songs (based on their tempo)?
             String tempo = splitLine[47];
             String fastSongs = "";
             if (!tempo.startsWith("[") && Double.parseDouble(tempo) >= 120.0) {

@@ -61,6 +61,9 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
         int fastSongsPerArtist = 0;
         int songsPerArtist = 0;
 
+        double tempoTotal = 0.0;
+        int songsWithTempoRecorded = 0;
+
         double urbanPopulation = 0;
         double ruralPopulation = 0;
         double childrenUnder1To11 = 0;
@@ -74,6 +77,7 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 
         for (CustomWritable cw : values) {
 
+            //question one
             intermediateStringData = cw.getQuestionOne().split(",");
 
             for (String genrePair : intermediateStringData) {
@@ -97,6 +101,13 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
                 intermediateQuestionOne.append(":");
                 intermediateQuestionOne.append(genrePerArtistMap.get(genre));
                 intermediateQuestionOne.append(",");
+            }
+
+            //question two
+            if (!cw.getQuestionTwo().startsWith("N/A")) {
+                intermediateStringData = cw.getQuestionTwo().split(":");
+                tempoTotal += Double.parseDouble(intermediateStringData[0]);
+                songsWithTempoRecorded += Integer.parseInt(intermediateStringData[1]);
             }
 
 //            intermediateStringData = cw.getQuestionOne().split(":");
@@ -184,7 +195,7 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 //        //q1
         customWritable.setQuestionOne(intermediateQuestionOne.toString());
 //        //q2
-//        customWritable.setQuestionTwo(unmarriedMales + ":" + unmarriedFemales + ":" + totalPopulation);
+        customWritable.setQuestionTwo(tempoTotal + ":" + songsWithTempoRecorded);
 //        //q3
 //        customWritable.setQuestionThree(totalHispanicPopulation +":"+hispanicMalesUnder18+":"+hispanicMales19to29+
 //        ":"+hispanicMales30to39+":"+hispanicFemalesUnder18+":"+hispanicFemales19to29+":"+hispanicFemales30to39);
