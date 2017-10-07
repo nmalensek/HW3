@@ -14,7 +14,6 @@ public class CustomWritable implements Writable {
     //because not all mapped files will contain question data
     private String questionOne = "0:0";
     private String questionTwo = "0:0";
-    private String questionTwoTotalSongs = "0";
     private String questionThree = "0:0:0:0:0:0:0";
     private String questionFour = "0:0";
     private String questionFiveTotalHomes = "0";
@@ -35,8 +34,7 @@ public class CustomWritable implements Writable {
     @Override
     public void readFields(DataInput dataInput) throws IOException {
         questionOne = WritableUtils.readString(dataInput);
-//        questionTwo = WritableUtils.readString(dataInput);
-//        questionTwoTotalSongs = WritableUtils.readString(dataInput);
+        questionTwo = WritableUtils.readString(dataInput);
 //        questionThree = WritableUtils.readString(dataInput);
         questionFour = WritableUtils.readString(dataInput);
 //        questionFiveTotalHomes = WritableUtils.readString(dataInput);
@@ -57,8 +55,7 @@ public class CustomWritable implements Writable {
     @Override
     public void write(DataOutput dataOutput) throws IOException {
         WritableUtils.writeString(dataOutput, questionOne);
-//        WritableUtils.writeString(dataOutput, questionTwo);
-//        WritableUtils.writeString(dataOutput, questionTwoTotalSongs);
+        WritableUtils.writeString(dataOutput, questionTwo);
 //        WritableUtils.writeString(dataOutput, questionThree);
         WritableUtils.writeString(dataOutput, questionFour);
 //        WritableUtils.writeString(dataOutput, questionFiveTotalHomes);
@@ -75,9 +72,6 @@ public class CustomWritable implements Writable {
 
     public String getQuestionTwo() {return questionTwo;}
     public void setQuestionTwo(String questionTwo) {this.questionTwo = questionTwo;}
-
-    public String getQuestionTwoTotalSongs() { return questionTwoTotalSongs; }
-    public void setQuestionTwoTotalSongs(String questionTwoTotalSongs) { this.questionTwoTotalSongs = questionTwoTotalSongs; }
 
     public String getQuestionThree() {return questionThree;}
     public void setQuestionThree(String questionThree) {this.questionThree = questionThree;}

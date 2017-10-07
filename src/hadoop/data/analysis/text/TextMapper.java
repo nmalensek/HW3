@@ -81,7 +81,6 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             String totalSongs = "N/A";
 
             if (!splitLine[47].startsWith("[")) {
-                Double.parseDouble(splitLine[47]);
                 tempoScore = splitLine[47];
                 totalSongs = "1";
             }

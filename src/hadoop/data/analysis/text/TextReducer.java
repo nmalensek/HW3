@@ -254,7 +254,8 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
         multipleOutputs.write("question2", "", new Text(
-                "\n" + calculateAverage(totalTempo, totalSongsWithTempo)));
+                "\n" + "Total tempo: " + totalTempo + "\n" + "Songs with tempo: " + totalSongsWithTempo
+        + "\n" + "Average tempo: " + calculateAverage(totalTempo, totalSongsWithTempo)));
 //        multipleOutputs.write("question3", mostElderlyState, new Text(
 //                " " + currentMax + "%"));
         multipleOutputs.write("question4", "", new Text("\n" + questionFour()));
