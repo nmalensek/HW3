@@ -92,9 +92,10 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
 //                //question 4 Who are the top ten artists for fast songs (based on their tempo)?
             String tempo = splitLine[47];
             String fastSongs = "";
-            if (Double.parseDouble(tempo) >= 120.0) {
+            if (!tempo.startsWith("[") && Double.parseDouble(tempo) >= 120.0) {
                 fastSongs = "1";
             }
+            customWritable.setQuestionFour(fastSongs);
 
 //
 //                //question 5 What are top ten songs based on their hotness in each genre? Please also provide the artist

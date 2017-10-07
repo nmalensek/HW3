@@ -98,7 +98,7 @@ public class MapReduceJob {
         MultipleOutputs.addNamedOutput(job, "question1", TextOutputFormat.class, Text.class, Text.class);
 //        MultipleOutputs.addNamedOutput(job, "question2", TextOutputFormat.class, Text.class, Text.class);
 //        MultipleOutputs.addNamedOutput(job, "question3", TextOutputFormat.class, Text.class, Text.class);
-//        MultipleOutputs.addNamedOutput(job, "question4", TextOutputFormat.class, Text.class, Text.class);
+        MultipleOutputs.addNamedOutput(job, "question4", TextOutputFormat.class, Text.class, Text.class);
 //        MultipleOutputs.addNamedOutput(job, "question5", TextOutputFormat.class, Text.class, Text.class);
 //        MultipleOutputs.addNamedOutput(job, "question6", TextOutputFormat.class, Text.class, Text.class);
         MultipleOutputs.addNamedOutput(job, "question7", TextOutputFormat.class, Text.class, Text.class);

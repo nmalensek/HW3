@@ -38,7 +38,7 @@ public class CustomWritable implements Writable {
 //        questionTwo = WritableUtils.readString(dataInput);
 //        questionTwoTotalSongs = WritableUtils.readString(dataInput);
 //        questionThree = WritableUtils.readString(dataInput);
-//        questionFour = WritableUtils.readString(dataInput);
+        questionFour = WritableUtils.readString(dataInput);
 //        questionFiveTotalHomes = WritableUtils.readString(dataInput);
 //        questionFiveHomeValues = WritableUtils.readString(dataInput);
 //        questionSixTotalRenters = WritableUtils.readString(dataInput);
@@ -60,7 +60,7 @@ public class CustomWritable implements Writable {
 //        WritableUtils.writeString(dataOutput, questionTwo);
 //        WritableUtils.writeString(dataOutput, questionTwoTotalSongs);
 //        WritableUtils.writeString(dataOutput, questionThree);
-//        WritableUtils.writeString(dataOutput, questionFour);
+        WritableUtils.writeString(dataOutput, questionFour);
 //        WritableUtils.writeString(dataOutput, questionFiveTotalHomes);
 //        WritableUtils.writeString(dataOutput, questionFiveHomeValues);
 //        WritableUtils.writeString(dataOutput, questionSixTotalRenters);

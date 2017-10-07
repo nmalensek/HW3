@@ -58,6 +58,7 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
         Map<String, String> genrePerArtistMap = new HashMap<>();
         Map<String, String> questionEightMap = new HashMap<>();
 
+        int fastSongsPerArtist = 0;
         int songsPerArtist = 0;
 
         double urbanPopulation = 0;
@@ -132,6 +133,11 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 //                rentDoubles[i] += Double.parseDouble(intermediateStringData[i]);
 //            }
 
+            //question 4
+            if (!cw.getQuestionFour().isEmpty()) {
+                fastSongsPerArtist += Integer.parseInt(cw.getQuestionFour());
+            }
+
             //question 7
             songsPerArtist += Integer.parseInt(cw.getQuestionSeven());
 
@@ -183,7 +189,7 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 //        customWritable.setQuestionThree(totalHispanicPopulation +":"+hispanicMalesUnder18+":"+hispanicMales19to29+
 //        ":"+hispanicMales30to39+":"+hispanicFemalesUnder18+":"+hispanicFemales19to29+":"+hispanicFemales30to39);
 //        //q4
-//        customWritable.setQuestionFour(ruralHouseholds+":"+urbanHouseholds);
+        customWritable.setQuestionFour(String.valueOf(fastSongsPerArtist));
 //        //q5
 //        customWritable.setQuestionFiveTotalHomes(String.valueOf(totalHouses));
 //        for (int i = 0; i < homeDoubles.length; i++) {
