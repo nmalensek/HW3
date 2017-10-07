@@ -1,5 +1,8 @@
 package hadoop.data.analysis.test;
 
+import org.apache.hadoop.util.hash.Hash;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -24,21 +27,30 @@ public class TopTen {
     };
 
     private void calcTopTen() {
-        HashMap<Integer, String> topTenMap = new HashMap<>();
+        HashMap<String, Integer> topTenMap = new HashMap<>();
         for (String g : genres) {
             String tag = g.split(":")[0];
             int count = Integer.parseInt(g.split(":")[1]);
-            topTenMap.put(count, tag);
+            topTenMap.put(tag, count);
         }
 
-        LinkedList<Integer> tenList = new LinkedList<>();
+        ArrayList<String> tenList = new ArrayList<>();
 
-        tenList.addAll(topTenMap.keySet());
-        Collections.sort(tenList);
-        Collections.reverse(tenList);
+        HashMap<String, Integer> tenCopy = new HashMap<>(topTenMap);
         for (int i = 0; i < 10; i++) {
-            System.out.println(i + 1 + " - " + topTenMap.get(tenList.get(i)) + ":" + tenList.get(i));
+            int largest = 0;
+            String largestGenre = "";
+            for (String genre : tenCopy.keySet()) {
+                if (tenCopy.get(genre) > largest) {
+                    largest = tenCopy.get(genre);
+                    largestGenre = genre;
+                }
+            }
+            tenList.add(largestGenre + ":" + largest);
+            tenCopy.remove(largestGenre);
         }
+
+        System.out.println(tenList.toString());
     }
 
     public static void main(String[] args) {

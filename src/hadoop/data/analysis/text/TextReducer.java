@@ -13,7 +13,7 @@ import java.util.*;
 public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     private MultipleOutputs multipleOutputs;
     private HashMap<String, String> totalGenreMap = new HashMap<>();
-    private String totalGenreCount = "";
+    private StringBuilder totalGenreCount = new StringBuilder();
     private List<Double> averageList = new ArrayList<>();
     private Map<Text, Double> elderlyMap = new HashMap<>();
     private Text mostElderlyState = new Text();
@@ -21,6 +21,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 
     /**
      * Writes answers to each question in their own files.
+     *
      * @param context MapReduce context
      * @throws IOException
      * @throws InterruptedException
@@ -51,8 +52,9 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     /**
      * Sums all values and sets the final values for each variable. Performs calculations as necessary and
      * writes to output file.
-     * @param key state
-     * @param values MapMultiple objects that contain values for each state
+     *
+     * @param key     state
+     * @param values  MapMultiple objects that contain values for each state
      * @param context MapReduce context
      * @throws IOException
      * @throws InterruptedException
@@ -95,9 +97,9 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         double totalMales = 0;
         double totalFemales = 0;
 
-        Double[] homeDoubles = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-        Double[] rentDoubles = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
-        Double[] roomDoubles = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+        Double[] homeDoubles = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        Double[] rentDoubles = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        Double[] roomDoubles = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
         for (CustomWritable cw : values) {
 
@@ -168,15 +170,10 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         }
 
         //question 8 determine top 10
-        LinkedList<String> topTenList = new LinkedList<>();
-        StringBuilder builder = new StringBuilder();
-        for (String tag : totalGenreMap.keySet()) {
-            builder.append(tag);
-            builder.append(" - ");
-            builder.append(totalGenreMap.get(tag));
-            builder.append("\n");
+        ArrayList<String> topTenGenreTags = new ArrayList<>(calculateTopTen(totalGenreMap));
+        for (String tag : topTenGenreTags) {
+            totalGenreCount.append(tag);
         }
-        totalGenreCount = builder.toString();
 
         //put home values into an array so they can be put into a map with the ranges
 //        for (int i = 0; i < 20; i++) {
@@ -261,6 +258,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     /**
      * Close multiple outputs, otherwise the results might not be written to output files.
      * Also writes questions 2, 3, and 8 because the answer isn't per key (artist).
+     *
      * @param context MapReduce context
      * @throws IOException
      * @throws InterruptedException
@@ -271,7 +269,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 //                calculateNinetyFifthPercentile(averageList) + " rooms"));
 //        multipleOutputs.write("question3", mostElderlyState, new Text(
 //                " " + currentMax + "%"));
-        multipleOutputs.write("question8", "", new Text(totalGenreCount));
+        multipleOutputs.write("question8", "", new Text(totalGenreCount.toString()));
         super.cleanup(context);
         multipleOutputs.close();
     }
@@ -279,6 +277,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     /**
      * Calculate percentage, ignores answer if impossible number is calculated (VI and PR
      * generally cause this)
+     *
      * @param numerator
      * @param denominator
      * @return
@@ -314,13 +313,34 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         }
     }
 
+    private ArrayList<String> calculateTopTen(HashMap<String, String> map) {
+        HashMap<String, String> topTenCopy = new HashMap<>(map);
+        ArrayList<String> tenList = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            int largest = 0;
+            String largestGenre = "";
+            for (String genre : topTenCopy.keySet()) {
+                if (Integer.parseInt(topTenCopy.get(genre)) > largest) {
+                    largest = Integer.parseInt(topTenCopy.get(genre));
+                    largestGenre = genre;
+                }
+            }
+            tenList.add(largestGenre + ":" + largest);
+            topTenCopy.remove(largestGenre);
+        }
+
+        return tenList;
+    }
+
 
     /**
      * Calculates median, returns N/A if no iterations were performed (no data was collected).
      * The current count is tracked because this is calculating the median from ranges, not from
      * each data point.
-     * @param map map of ranges (key) and quantity per range (value)
-     * @param dataArray array of ranges
+     *
+     * @param map         map of ranges (key) and quantity per range (value)
+     * @param dataArray   array of ranges
      * @param totalNumber total number of the variable that's being examined (home values or rent ranges)
      * @return answer
      */
@@ -360,6 +380,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     /**
      * Calculates 95th percentile of the given list. If the result of list * .95 divides evenly,
      * that number is the 95th percentile. Otherwise, the next result is in the 95th percentile.
+     *
      * @param list list to calculate 95th percentile from
      * @return
      */
