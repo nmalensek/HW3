@@ -13,7 +13,6 @@ import java.util.*;
 public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     private MultipleOutputs multipleOutputs;
     private HashMap<String, String> totalGenreMap = new HashMap<>();
-    private StringBuilder totalGenreCount = new StringBuilder();
     private List<Double> averageList = new ArrayList<>();
     private Map<Text, Double> elderlyMap = new HashMap<>();
     private Text mostElderlyState = new Text();
@@ -65,22 +64,6 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         double totalRent = 0;
         double totalOwn = 0;
         double totalPopulation = 0;
-        double totalMalesNeverMarried = 0;
-        double totalFemalesNeverMarried = 0;
-        double totalHispanicPopulation = 0;
-        double hispanicMalesUnder18 = 0;
-        double hispanicFemalesUnder18 = 0;
-        double hispanicMales19to29 = 0;
-        double hispanicFemales19to29 = 0;
-        double hispanicMales30to39 = 0;
-        double hispanicFemales30to39 = 0;
-        double ruralHouseholds = 0;
-        double urbanHouseholds = 0;
-        double totalHouses = 0;
-        double totalRenters = 0;
-        double totalRooms = 0;
-        double averageRooms = 0;
-        double elderlyPopulation = 0;
         int songsPerArtist = 0;
         String[] finalGenreCount;
         String[] q8TotalGenreCount;
@@ -167,12 +150,6 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
             } else if (genreCount == largest) {
                 mostTaggedGenre += ", " + genre + " - " + genrePerArtistMap.get(genre);
             }
-        }
-
-        //question 8 determine top 10
-        ArrayList<String> topTenGenreTags = new ArrayList<>(calculateTopTen(totalGenreMap));
-        for (String tag : topTenGenreTags) {
-            totalGenreCount.append(tag);
         }
 
         //put home values into an array so they can be put into a map with the ranges
@@ -269,7 +246,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 //                calculateNinetyFifthPercentile(averageList) + " rooms"));
 //        multipleOutputs.write("question3", mostElderlyState, new Text(
 //                " " + currentMax + "%"));
-        multipleOutputs.write("question8", "", new Text(totalGenreCount.toString()));
+        multipleOutputs.write("question8", "", new Text("\n" + questionEight()));
         super.cleanup(context);
         multipleOutputs.close();
     }
@@ -318,19 +295,31 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         ArrayList<String> tenList = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
-            int largest = 0;
-            String largestGenre = "";
-            for (String genre : topTenCopy.keySet()) {
-                if (Integer.parseInt(topTenCopy.get(genre)) > largest) {
-                    largest = Integer.parseInt(topTenCopy.get(genre));
-                    largestGenre = genre;
+            double largest = 0;
+            String largestString = "";
+            for (String key : topTenCopy.keySet()) {
+                if (Double.parseDouble(topTenCopy.get(key)) > largest) {
+                    largest = Double.parseDouble(topTenCopy.get(key));
+                    largestString = key;
                 }
             }
-            tenList.add(largestGenre + ":" + largest);
-            topTenCopy.remove(largestGenre);
+            tenList.add(largestString + ":" + largest);
+            topTenCopy.remove(largestString);
         }
 
         return tenList;
+    }
+
+    private String questionEight() {
+        //question 8 determine top 10
+        StringBuilder builder = new StringBuilder();
+        ArrayList<String> topTenGenreTags = new ArrayList<>(calculateTopTen(totalGenreMap));
+        for (String tag : topTenGenreTags) {
+            builder.append(tag);
+            builder.append("\n");
+        }
+
+        return builder.toString();
     }
 
 
