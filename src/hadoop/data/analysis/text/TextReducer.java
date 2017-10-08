@@ -15,7 +15,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     private HashMap<String, String> totalGenreMap = new HashMap<>();
     double totalTempo = 0.0;
     double totalSongsWithTempo = 0.0;
-    private HashMap<String, String> fastSongsMap = new HashMap<>();
+    private HashMap<String, HashMap<String, String>> fastSongsMap = new HashMap<>();
     private List<Double> averageList = new ArrayList<>();
     private Map<Text, Double> elderlyMap = new HashMap<>();
     private Text mostElderlyState = new Text();
@@ -66,6 +66,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     protected void reduce(Text key, Iterable<CustomWritable> values, Context context) throws IOException, InterruptedException {
         String[] finalGenreCount;
         String mostTaggedGenre = "";
+//        StringBuilder questionFourBuilder = new StringBuilder();
 
         double totalRent = 0;
         double totalOwn = 0;
@@ -74,6 +75,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         int songsPerArtist = 0;
         String[] q8TotalGenreCount;
         HashMap<String, String> genrePerArtistMap = new HashMap<>();
+        HashMap<String, String> fastSongsPerArtistMap = new HashMap<>();
 
         String[] totalGenreString;
         double urbanPopulation = 0;
@@ -132,7 +134,14 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 //                rentDoubles[i] += Double.parseDouble(intermediateStringData[i]);
 //            }
 
-            fastSongsPerArtist += Integer.parseInt(cw.getQuestionFour());
+            if (!cw.getQuestionFour().isEmpty()) {
+                String[] splitFastSongs = cw.getQuestionFour().split(",,,");
+                for (String fastSong : splitFastSongs) {
+                    String title = fastSong.split(":::")[0];
+                    String tempo = fastSong.split(":::")[1];
+                    fastSongsPerArtistMap.put(title, tempo);
+                }
+            }
 
             songsPerArtist += Integer.parseInt(cw.getQuestionSeven());
 
@@ -200,7 +209,8 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
                 " " + mostTaggedGenre));
 
 
-        fastSongsMap.put(key.toString(), String.valueOf(fastSongsPerArtist));
+        //add all artist's fast songs to map
+        fastSongsMap.put(key.toString(), fastSongsPerArtistMap);
 //
 //        multipleOutputs.write("question3a", key, new Text(
 //                " Males: " + calculatePercentage(hispanicMalesUnder18, totalHispanicPopulation) +
@@ -330,14 +340,42 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         return tenList;
     }
 
+    private ArrayList<String> questionFourTopTen(HashMap<String, HashMap<String, String>> map) {
+        HashMap<String, HashMap<String, String>> splittableMapCopy = new HashMap<>(map);
+        ArrayList<String> splittableTenList = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            double fastestTempo = 0;
+            String fastestTitle = "";
+            String fastestArtist = "";
+            for (String artist : splittableMapCopy.keySet()) {
+                if (splittableMapCopy.get(artist).isEmpty()) { continue;}
+
+                HashMap<String, String> fastestSongsPerArtist = splittableMapCopy.get(artist);
+                for (String title : fastestSongsPerArtist.keySet()) {
+                    double tempo = Double.parseDouble(fastestSongsPerArtist.get(title));
+
+//                    if (tempo < fastestTempo) {
+//                        break; //songs per artist ordered fastest to slowest, so break on a slower song
+                     if (tempo > fastestTempo) {
+                        fastestTempo = tempo;
+                        fastestTitle = title;
+                        fastestArtist = artist;
+                    }
+                }
+            }
+            splittableMapCopy.get(fastestArtist).remove(fastestTitle); //remove fastest song from copied map
+            splittableTenList.add(fastestTempo + ":" + fastestTitle + ":" + fastestArtist);
+        }
+        return splittableTenList;
+    }
+
     private String questionFour() {
         StringBuilder fourBuilder = new StringBuilder();
-        ArrayList<String> topTenFastSongArtists = new ArrayList<>(calculateTopTen(fastSongsMap));
+        ArrayList<String> topTenFastSongArtists = new ArrayList<>(questionFourTopTen(fastSongsMap));
         for (String tempo : topTenFastSongArtists) {
-            fourBuilder.append(tempo);
-            fourBuilder.append("\n");
+            fourBuilder.append(tempo).append("\n");
         }
-
         return fourBuilder.toString();
     }
 

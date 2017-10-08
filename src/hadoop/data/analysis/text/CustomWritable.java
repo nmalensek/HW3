@@ -10,14 +10,13 @@ import java.util.HashMap;
 
 public class CustomWritable implements Writable {
 
-    //must define strings with initial 0 values to avoid number format and null pointer exceptions
-    //because not all mapped files will contain question data
+    //define strings with initial 0 values to avoid number format and null pointer exceptions
+    //because not all files will contain question data
     private String questionOne = "0:0";
     private String questionTwo = "0:0";
     private String questionThree = "0:0:0:0:0:0:0";
     private String questionFour = "0:0";
-    private String questionFiveTotalHomes = "0";
-    private String questionFiveHomeValues = "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0";
+    private String questionFive = "0";
     private String questionSixTotalRenters = "0";
     private String questionSixRenterValues = "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0";
     private String questionSeven = "0:0";
@@ -37,8 +36,7 @@ public class CustomWritable implements Writable {
         questionTwo = WritableUtils.readString(dataInput);
 //        questionThree = WritableUtils.readString(dataInput);
         questionFour = WritableUtils.readString(dataInput);
-//        questionFiveTotalHomes = WritableUtils.readString(dataInput);
-//        questionFiveHomeValues = WritableUtils.readString(dataInput);
+        questionFive = WritableUtils.readString(dataInput);
 //        questionSixTotalRenters = WritableUtils.readString(dataInput);
 //        questionSixRenterValues = WritableUtils.readString(dataInput);
         questionSeven = WritableUtils.readString(dataInput);
@@ -58,8 +56,7 @@ public class CustomWritable implements Writable {
         WritableUtils.writeString(dataOutput, questionTwo);
 //        WritableUtils.writeString(dataOutput, questionThree);
         WritableUtils.writeString(dataOutput, questionFour);
-//        WritableUtils.writeString(dataOutput, questionFiveTotalHomes);
-//        WritableUtils.writeString(dataOutput, questionFiveHomeValues);
+        WritableUtils.writeString(dataOutput, questionFive);
 //        WritableUtils.writeString(dataOutput, questionSixTotalRenters);
 //        WritableUtils.writeString(dataOutput, questionSixRenterValues);
         WritableUtils.writeString(dataOutput, questionSeven);
@@ -79,10 +76,8 @@ public class CustomWritable implements Writable {
     public String getQuestionFour() {return questionFour;}
     public void setQuestionFour(String questionFour) {this.questionFour = questionFour;}
 
-    public String getQuestionFiveTotalHomes() {return questionFiveTotalHomes;}
-    public void setQuestionFiveTotalHomes(String questionFiveTotalHomes) {this.questionFiveTotalHomes = questionFiveTotalHomes;}
-    public String getQuestionFiveHomeValues() {return questionFiveHomeValues;}
-    public void setQuestionFiveHomeValues(String questionFiveHomeValues) {this.questionFiveHomeValues = questionFiveHomeValues;}
+    public String getQuestionFive() {return questionFive;}
+    public void setQuestionFive(String questionFive) {this.questionFive = questionFive;}
 
     public String getQuestionSixTotalRenters() {return questionSixTotalRenters;}
     public void setQuestionSixTotalRenters(String questionSixTotalRenters) {this.questionSixTotalRenters = questionSixTotalRenters;}

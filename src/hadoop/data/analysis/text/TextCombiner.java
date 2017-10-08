@@ -4,10 +4,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWritable> {
 
@@ -53,12 +50,15 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
         String rentValues = "";
         Double[] rentDoubles = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
+        StringBuilder intermediateQuestionFour = new StringBuilder();
+
         StringBuilder intermediateQuestionOne = new StringBuilder();
+        StringBuilder intermediateQuestionFive = new StringBuilder();
         StringBuilder intermediateQuestionEight = new StringBuilder();
         Map<String, String> genrePerArtistMap = new HashMap<>();
         Map<String, String> questionEightMap = new HashMap<>();
+        HashMap<String, String> questionFiveMap = new HashMap<>();
 
-        int fastSongsPerArtist = 0;
         int songsPerArtist = 0;
 
         double tempoTotal = 0.0;
@@ -146,7 +146,18 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 
             //question 4
             if (!cw.getQuestionFour().isEmpty()) {
-                fastSongsPerArtist += Integer.parseInt(cw.getQuestionFour());
+                intermediateQuestionFour.append(cw.getQuestionFour());
+            }
+
+            //question 5 setup
+            String[] splitFive = cw.getQuestionFive().split(":");
+            for (int i = 2; i < splitFive.length; i++) {
+                if (questionFiveMap.get(splitFive[i]) == null) {
+                    questionFiveMap.put(splitFive[i], splitFive[0] + ":" + splitFive[1]);
+                } else {
+                    String existingSongsForTag = questionFiveMap.get(splitFive[i]);
+                    questionFiveMap.put(splitFive[i], existingSongsForTag + "," + splitFive[0] + ":" + splitFive[1]);
+                }
             }
 
             //question 7
@@ -192,6 +203,53 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 //            totalFemales += Double.parseDouble(intermediateStringData[7]);
         }
 
+        //calculate 10 fastest songs for this artist
+//        StringBuilder fastestSongs = new StringBuilder();
+//        if (!intermediateQuestionFour.toString().isEmpty()) {
+//            String[] splitFastSongs = intermediateQuestionFour.toString().split(",,,");
+//            ArrayList<String> fastSongsCopy = new ArrayList<>(Arrays.asList(splitFastSongs));
+//            for (int i = 0; i < 10; i++) {
+//                double fastestTempo = 0;
+//                String fastestTitle = "";
+//                for (String fastSong : fastSongsCopy) {
+//                    if (Double.parseDouble(fastSong.split(":::")[1]) > fastestTempo) {
+//                        fastestTempo = Double.parseDouble(fastSong.split(":::")[1]);
+//                        fastestTitle = fastSong.split(":::")[0];
+//                    }
+//                }
+//                fastestSongs.append(fastestTitle).append(":::").append(fastestTempo).append(",,,");
+//                fastSongsCopy.remove(fastestTitle + ":::" + fastestTempo);
+//            }
+//        }
+
+        //calculate top 10 songs per genre for this artist
+//        StringBuilder q5 = new StringBuilder();
+//        for (String genreName : questionFiveMap.keySet()) {
+//            ArrayList<String> titleHotnessPairs = new ArrayList<>();
+//            titleHotnessPairs.addAll(Arrays.asList(questionFiveMap.get(genreName).split(",")));
+//            ArrayList<String> tenList = new ArrayList<>();
+//
+//            for (int i = 0; i < 10; i++) {
+//                double largest = 0;
+//                String largestString = "";
+//                for (String titleHotness : titleHotnessPairs) {
+//                    if (Double.parseDouble(titleHotness.split(":")[1]) > largest) {
+//                        largest = Double.parseDouble(titleHotness.split(":")[1]);
+//                        largestString = titleHotness.split(":")[0];
+//                    }
+//                }
+//                tenList.add(largestString + ":" + largest);
+//                titleHotnessPairs.remove(largestString + ":" + largest);
+//            }
+//            q5.append(genreName);
+//            q5.append(":");
+//            for (String topTen : tenList) {
+//                q5.append(topTen).append(",");
+//            }
+//            q5.append("\n");
+//        }
+
+
 //        //q1
         customWritable.setQuestionOne(intermediateQuestionOne.toString());
 //        //q2
@@ -200,13 +258,9 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 //        customWritable.setQuestionThree(totalHispanicPopulation +":"+hispanicMalesUnder18+":"+hispanicMales19to29+
 //        ":"+hispanicMales30to39+":"+hispanicFemalesUnder18+":"+hispanicFemales19to29+":"+hispanicFemales30to39);
 //        //q4
-        customWritable.setQuestionFour(String.valueOf(fastSongsPerArtist));
+        customWritable.setQuestionFour(intermediateQuestionFour.toString());
 //        //q5
-//        customWritable.setQuestionFiveTotalHomes(String.valueOf(totalHouses));
-//        for (int i = 0; i < homeDoubles.length; i++) {
-//            homeValues += String.valueOf(homeDoubles[i] + ":");
-//        }
-//        customWritable.setQuestionFiveHomeValues(homeValues);
+//        customWritable.setQuestionFive(q5.toString());
 //        //q6
 //        customWritable.setQuestionSixTotalRenters(String.valueOf(totalRenters));
 //        for (int i = 0; i < rentDoubles.length; i++) {

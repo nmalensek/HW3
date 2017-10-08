@@ -149,12 +149,73 @@ public class StringManipulationTest {
         System.out.println(Arrays.toString(testsplit));
     }
 
+    private void topTenHotness() {
+        String artist = "testArtist";
+        String test1 = "songTitle:8.0:rock:blues:hard rock:rap:pop:singer:hip-hop";
+        String test2 = "songTitle2:13.0:rock:ballad:hip-hop:classical";
+
+        HashMap<String, String> questionFiveMap = new HashMap<>();
+
+        String[] splitFive = test1.split(":");
+        for (int i = 2; i < splitFive.length; i++) {
+            if (questionFiveMap.get(splitFive[i]) == null) {
+                questionFiveMap.put(splitFive[i], splitFive[0] + ":" + splitFive[1]);
+            } else {
+                String existingSongsForTag = questionFiveMap.get(splitFive[i]);
+                questionFiveMap.put(splitFive[i], existingSongsForTag + "," + splitFive[0] + ":" + splitFive[1]);
+            }
+        }
+
+        String[] split = test2.split(":");
+        for (int i = 2; i < split.length; i++) {
+            if (questionFiveMap.get(split[i]) == null) {
+                questionFiveMap.put(split[i], split[0] + ":" + split[1]);
+            } else {
+                String existingSongsForTag = questionFiveMap.get(split[i]);
+                questionFiveMap.put(split[i], existingSongsForTag + "," + split[0] + ":" + split[1]);
+            }
+        }
+
+        for (String blah : questionFiveMap.keySet()) {
+            System.out.println(blah + ":" + questionFiveMap.get(blah));
+        }
+        System.out.println();
+
+        StringBuilder q5 = new StringBuilder();
+        for (String genreName : questionFiveMap.keySet()) {
+            ArrayList<String> titleHotnessPairs = new ArrayList<>();
+            titleHotnessPairs.addAll(Arrays.asList(questionFiveMap.get(genreName).split(",")));
+            ArrayList<String> tenList = new ArrayList<>();
+
+            for (int i = 0; i < 10; i++) {
+                double largest = 0;
+                String largestString = "";
+                for (String titleHotness : titleHotnessPairs) {
+                    if (Double.parseDouble(titleHotness.split(":")[1]) > largest) {
+                        largest = Double.parseDouble(titleHotness.split(":")[1]);
+                        largestString = titleHotness.split(":")[0];
+                    }
+                }
+                tenList.add(largestString + ":" + largest);
+                titleHotnessPairs.remove(largestString + ":" + largest);
+            }
+            q5.append(genreName);
+            q5.append(":");
+            for (String topTen : tenList) {
+                q5.append(topTen).append(",");
+            }
+            q5.append("\n");
+        }
+        System.out.println(q5.toString());
+    }
+
     public static void main(String[] args) {
         StringManipulationTest stringManipulationTest = new StringManipulationTest();
 //        stringManipulationTest.removeBrackets();
 //        stringManipulationTest.stringBuilder();
 //        stringManipulationTest.genreProcessing();
 //        stringManipulationTest.getAllGenres();
-        stringManipulationTest.testResetAndReplace();
+//        stringManipulationTest.testResetAndReplace();
+        stringManipulationTest.topTenHotness();
     }
 }
