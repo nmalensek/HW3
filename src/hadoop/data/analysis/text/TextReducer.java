@@ -94,14 +94,14 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         for (CustomWritable cw : values) {
 
             //question one
-            finalGenreCount = cw.getQuestionOne().split(",");
+            finalGenreCount = cw.getQuestionOne().split(",,,");
 
             loopThroughArray(finalGenreCount, genrePerArtistMap);
 
             //question two
             if (!cw.getQuestionTwo().isEmpty()) {
-                totalTempo += Double.parseDouble(cw.getQuestionTwo().split(":")[0]);
-                totalSongsWithTempo += Integer.parseInt(cw.getQuestionTwo().split(":")[1]);
+                totalTempo += Double.parseDouble(cw.getQuestionTwo().split(":::")[0]);
+                totalSongsWithTempo += Integer.parseInt(cw.getQuestionTwo().split(":::")[1]);
             }
 
 //            totalRent += Double.parseDouble(cw.getQuestionOne().split(":")[0]);
@@ -145,7 +145,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 
             songsPerArtist += Integer.parseInt(cw.getQuestionSeven());
 
-            q8TotalGenreCount = cw.getQuestionEight().split(",");
+            q8TotalGenreCount = cw.getQuestionEight().split(",,,");
 
             loopThroughArray(q8TotalGenreCount, totalGenreMap);
 
@@ -303,8 +303,8 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     private void loopThroughArray(String[] stringArray, HashMap<String, String> stringMap) {
         for (String genrePair : stringArray) {
             try {
-                String genreTag = genrePair.split(":")[0];
-                double genreCount = Double.parseDouble(genrePair.split(":")[1]);
+                String genreTag = genrePair.split(":::")[0];
+                double genreCount = Double.parseDouble(genrePair.split(":::")[1]);
 
                 if (stringMap.get(genreTag) == null) {
                     stringMap.put(genreTag, String.valueOf(genreCount));

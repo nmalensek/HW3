@@ -62,9 +62,9 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             for (int i = 0; i < tagFrequencyArray.length; i++) {
                 try {
                     builder.append(genreArray[i]);
-                    builder.append(":");
+                    builder.append(":::");
                     builder.append(tagFrequencyArray[i]);
-                    builder.append(",");
+                    builder.append(",,,");
 
                 } catch (NumberFormatException e) {
                     //skips files with malformed data
@@ -83,19 +83,13 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
                 tempoScore = splitLine[47];
                 totalSongs = "1";
             }
-            customWritable.setQuestionTwo(tempoScore + ":" + totalSongs);
+            customWritable.setQuestionTwo(tempoScore + ":::" + totalSongs);
 
-//                //question 3 What is the median danceability score across all the songs in the data set?
-//                int hispanicFemalesUnder18 = 0;
-//                int hispanicFemaleStartPosition = 4143;
-//                for (int i = 0; i < 13; i++) {
-//                    hispanicFemalesUnder18 += Integer.parseInt(
-//                            line.substring(hispanicFemaleStartPosition, hispanicFemaleStartPosition + 9));
-//                    hispanicFemaleStartPosition += 9;
-//                }
-//                String femalesUnder18 = String.valueOf(hispanicFemalesUnder18);
-//
-//
+            //question 3 What is the median danceability score across all the songs in the data set?
+
+
+
+
             //question 4 Who are the top ten artists for fast songs (based on their tempo)?
             String title = splitLine[50];
             String tempo = splitLine[47];
@@ -105,19 +99,16 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             }
             customWritable.setQuestionFour(fastSongs);
 
+            //question 6: On a per-year basis, what is the mean variance of loudness across the songs within the dataset?
 
-//                //question 6: On a per-year basis, what is the mean variance of loudness across the songs within the dataset?
-//                int rent = Integer.parseInt(line.substring(1812, 1821));
-//                int own = Integer.parseInt(line.substring(1803, 1812));
-//
-//                String rentVsOwn = rent + ":" + own;
-//                customWritable.setQuestionOne(rentVsOwn);
+
+
 
             //question 7: How many songs does each artist have in this data set?
             String songsPerArtist = "1";
             customWritable.setQuestionSeven(songsPerArtist);
 
-//            question 8: What are the top ten most popular terms (genres) that songs in the data set have been tagged with?
+            //question 8: What are the top ten most popular terms (genres) that songs in the data set have been tagged with?
 
             mbGenreTags = mbGenreTags.replaceAll("[\\[\\]\"]", "");
             String[] mbArray;
@@ -125,16 +116,16 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
                 mbArray = mbGenreTags.split(",");
                 for (String mbTag : mbArray) {
                     builder.append(mbTag);
-                    builder.append(":");
+                    builder.append(":::");
                     builder.append("1");
-                    builder.append(",");
+                    builder.append(",,,");
                 }
             }
             for (String s : genreArray) {
                 builder.append(s);
-                builder.append(":");
+                builder.append(":::");
                 builder.append("1");
-                builder.append(",");
+                builder.append(",,,");
             }
 
             customWritable.setQuestionEight(builder.toString());
@@ -143,27 +134,18 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             //question 5 What are top ten songs based on their hotness in each genre? Please also provide the artist
             //name and title for these songs.
 
-            builder.append(splitLine[50]); //song title
-            builder.append(":");
-            builder.append(splitLine[42]); //song hotness
-            builder.append(":");
-            String[] tagsArray = customWritable.getQuestionEight().split(","); //re-use question 8 tag collection
-            for (String genreTag : tagsArray) {
-                builder.append(genreTag.split(":")[0]);
-                builder.append(":");
-            }
-            customWritable.setQuestionFive(builder.toString()); //title:hotness:tag:tag:...:tag:
-            builder.delete(0, builder.length());
-
-//                int houseValueStartPosition = 2928;
-//                int totalHomes = 0;
-//                String homeValues = "";
-//                for (int i = 0; i < 20; i++) {
-//                    totalHomes += Integer.parseInt(line.substring(houseValueStartPosition, houseValueStartPosition + 9));
-//                    homeValues += Double.parseDouble(line.substring(houseValueStartPosition, houseValueStartPosition + 9)) + ":";
-//                    houseValueStartPosition += 9;
-//                }
-//
+//            builder.append(splitLine[50]); //song title
+//            builder.append(":::");
+//            builder.append(splitLine[42]); //song hotness
+//            builder.append(":::");
+//            String[] tagsArray = customWritable.getQuestionEight().split(",,,"); //re-use question 8 tag collection
+//            for (String genreTag : tagsArray) {
+//                builder.append(genreTag.split(":::")[0]);
+//                builder.append(":::");
+//            }
+//            customWritable.setQuestionFive(builder.toString()); //title:hotness:tag:tag:...:tag:
+//            builder.delete(0, builder.length());
+////
 //                customWritable.setQuestionFiveTotalHomes(String.valueOf(totalHomes));
 //                customWritable.setQuestionFiveHomeValues(homeValues);
 
