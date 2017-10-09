@@ -34,7 +34,6 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             String[] splitLine = line.split("\t");
             String artist = splitLine[11];
             StringBuilder builder = new StringBuilder();
-            String mbGenreTags = splitLine[9];
 
             try {
                 Integer.parseInt(splitLine[0]);
@@ -109,18 +108,6 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             customWritable.setQuestionSeven(songsPerArtist);
 
             //question 8: What are the top ten most popular terms (genres) that songs in the data set have been tagged with?
-
-            mbGenreTags = mbGenreTags.replaceAll("[\\[\\]\"]", "");
-            String[] mbArray;
-            if (!mbGenreTags.isEmpty()) {
-                mbArray = mbGenreTags.split(",");
-                for (String mbTag : mbArray) {
-                    builder.append(mbTag);
-                    builder.append(":::");
-                    builder.append("1");
-                    builder.append(",,,");
-                }
-            }
             for (String s : genreArray) {
                 builder.append(s);
                 builder.append(":::");
