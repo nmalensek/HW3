@@ -116,13 +116,17 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
             }
 
             //question 5 setup
-            String[] splitFive = cw.getQuestionFive().split(":::");
-            for (int i = 2; i < splitFive.length; i++) {
-                if (questionFiveMap.get(splitFive[i]) == null) {
-                    questionFiveMap.put(splitFive[i], splitFive[0] + ":::" + splitFive[1]);
-                } else {
-                    String existingSongsForTag = questionFiveMap.get(splitFive[i]);
-                    questionFiveMap.put(splitFive[i], existingSongsForTag + ",,," + splitFive[0] + ":::" + splitFive[1]);
+            if (!cw.getQuestionFive().isEmpty()) {
+                String[] splitFive = cw.getQuestionFive().split(":::");
+                for (int i = 3; i < splitFive.length; i++) {
+                    String genreTag = splitFive[i];
+                    if (questionFiveMap.get(genreTag) == null) {
+                        questionFiveMap.put(genreTag, splitFive[0] + ":::" + splitFive[1] + ":::" + splitFive[2]);
+                    } else {
+                        String existingSongsForTag = questionFiveMap.get(splitFive[i]);
+                        questionFiveMap.put(genreTag, existingSongsForTag + ",,," +
+                                splitFive[0] + ":::" + splitFive[1] + ":::" + splitFive[2]);
+                    }
                 }
             }
 
@@ -158,32 +162,33 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
         }
 
         //question 5: calculate top 10 songs per genre for this artist
-//        StringBuilder q5 = new StringBuilder();
-//        for (String genreName : questionFiveMap.keySet()) {
-//            ArrayList<String> titleHotnessPairs = new ArrayList<>();
-//            titleHotnessPairs.addAll(Arrays.asList(questionFiveMap.get(genreName).split(",,,")));
-//            ArrayList<String> tenList = new ArrayList<>();
-//
-//            for (int i = 0; i < 10; i++) {
-//                double largest = 0;
-//                String largestString = "";
-//                for (String titleHotness : titleHotnessPairs) {
-//                    if (Double.parseDouble(titleHotness.split(":::")[1]) > largest) {
-//                        largest = Double.parseDouble(titleHotness.split(":::")[1]);
-//                        largestString = titleHotness.split(":::")[0];
-//                    }
-//                }
-//                tenList.add(largestString + ":::" + largest);
-//                titleHotnessPairs.remove(largestString + ":::" + largest);
-//            }
-//            q5.append(genreName);
-//            q5.append(":::");
-//            for (String topTen : tenList) {
-//                q5.append(topTen).append(",,,");
-//            }
-//            q5.append("\n");
-//        }
+        StringBuilder q5 = new StringBuilder();
+        if (!customWritable.getQuestionFive().isEmpty()) {
+            for (String genreName : questionFiveMap.keySet()) {
+                ArrayList<String> titleHotnessPairs = new ArrayList<>();
+                titleHotnessPairs.addAll(Arrays.asList(questionFiveMap.get(genreName).split(",,,")));
+                ArrayList<String> tenList = new ArrayList<>();
 
+                for (int i = 0; i < 10; i++) {
+                    double largest = 0;
+                    String largestString = "";
+                    for (String titleHotness : titleHotnessPairs) {
+                        if (Double.parseDouble(titleHotness.split(":::")[1]) > largest) {
+                            largest = Double.parseDouble(titleHotness.split(":::")[1]);
+                            largestString = titleHotness.split(":::")[0];
+                        }
+                    }
+                    tenList.add(largestString + ":::" + largest + ":::" + key.toString());
+                    titleHotnessPairs.remove(largestString + ":::" + largest);
+                }
+                q5.append(genreName);
+                q5.append("---");
+                for (String topTen : tenList) {
+                    q5.append(topTen).append(",,,");
+                }
+                q5.append("\n");
+            }
+        }
 
 //        //q1
         customWritable.setQuestionOne(intermediateQuestionOne.toString());
@@ -195,7 +200,7 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 //        //q4
         customWritable.setQuestionFour(intermediateQuestionFour.toString());
 //        //q5
-//        customWritable.setQuestionFive(q5.toString());
+        customWritable.setQuestionFive(q5.toString());
 //        //q6
 //        customWritable.setQuestionSixTotalRenters(String.valueOf(totalRenters));
 //        for (int i = 0; i < rentDoubles.length; i++) {

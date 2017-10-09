@@ -133,24 +133,30 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
 
             //question 5 What are top ten songs based on their hotness in each genre? Please also provide the artist
             //name and title for these songs.
-
-//            builder.append(splitLine[50]); //song title
-//            builder.append(":::");
-//            builder.append(splitLine[42]); //song hotness
-//            builder.append(":::");
-//            String[] tagsArray = customWritable.getQuestionEight().split(",,,"); //re-use question 8 tag collection
-//            for (String genreTag : tagsArray) {
-//                builder.append(genreTag.split(":::")[0]);
-//                builder.append(":::");
-//            }
-//            customWritable.setQuestionFive(builder.toString()); //title:hotness:tag:tag:...:tag:
-//            builder.delete(0, builder.length());
-////
-//                customWritable.setQuestionFiveTotalHomes(String.valueOf(totalHomes));
-//                customWritable.setQuestionFiveHomeValues(homeValues);
-
+            if (hotnessIsANumber(splitLine[42])) {
+                String[] tagsArray = customWritable.getQuestionEight().split(",,,"); //re-use question 8 tag collection
+                for (String genreTag : tagsArray) {
+                    builder.append(genreTag.split(":::")[0]); //only get tag out
+                    builder.append(":::");
+                    builder.append(splitLine[50]); //song title
+                    builder.append(":::");
+                    builder.append(splitLine[42]); //song hotness
+                    builder.append("\n");
+                }
+            }
+            customWritable.setQuestionFive(builder.toString()); //genre:title:hotness\n
+            builder.delete(0, builder.length());
 
             context.write(new Text(artist), customWritable);
+        }
+    }
+
+    private boolean hotnessIsANumber(String hotness) {
+        try {
+            Double.parseDouble(hotness);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
         }
     }
 }
