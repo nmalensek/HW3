@@ -104,9 +104,15 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             }
             customWritable.setQuestionFour(fastSongs);
 
-            //question 6: On a per-year basis, what is the mean variance of loudness across the songs within the dataset?
+            //question 6: On a per-year basis, what is the mean variance of loudness across the songs within the datas et?
 
-
+            String loudness = "";
+            String year = "";
+            if (indexIsANumber(loudness)) {
+                loudness = splitLine[27];
+                year = splitLine[53];
+            }
+            customWritable.setQuestionSix(loudness + ":::" + year);
 
 
             //question 7: How many songs does each artist have in this data set?
@@ -124,33 +130,37 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             customWritable.setQuestionEight(builder.toString());
             builder.delete(0, builder.length());
 
-//            //question 5 What are top ten songs based on their hotness in each genre? Please also provide the artist
-//            //name and title for these songs.
-//            if (indexIsANumber(splitLine[42])) {
-//                String[] tagsArray = customWritable.getQuestionEight().split(",,,"); //re-use question 8 tag collection
-//                for (String genreTag : tagsArray) {
-//                    builder.append(genreTag.split(":::")[0]); //only get tag out
-//                    builder.append(":::");
-//                    builder.append(splitLine[50]); //song title
-//                    builder.append(":::");
-//                    builder.append(splitLine[42]); //song hotness
-//                    builder.append("\n");
-//                }
-//            }
-//            customWritable.setQuestionFive(builder.toString()); //genre:title:hotness\n
-//            builder.delete(0, builder.length());
+            //question 5 What are top ten songs based on their hotness in each genre? Please also provide the artist
+            //name and title for these songs.
+            if (indexIsANumber(splitLine[42])) {
+                String[] tagsArray = customWritable.getQuestionEight().split(",,,"); //re-use question 8 tag collection
+                for (String genreTag : tagsArray) {
+                    String tag = genreTag.split(":::")[0]; //only get tag out
+                    tag = tag.startsWith(" ") ? tag.substring(1) : tag; //remove spaces from start of tags
+
+                    builder.append(tag);
+                    builder.append(":::");
+                    builder.append(splitLine[50]); //song title
+                    builder.append(":::");
+                    builder.append(splitLine[42]); //song hotness
+                    builder.append("\n");
+                }
+            }
+            customWritable.setQuestionFive(builder.toString()); //genre:title:hotness\n
+            builder.delete(0, builder.length());
 
             //question 5 1.0 frequency tag only
-            if (indexIsANumber(splitLine[42])) {
-                builder.append(mostTaggedGenre);
-                builder.append(":::");
-                builder.append(splitLine[50]);
-                builder.append(":::");
-                builder.append(splitLine[42]);
-                builder.append("\n");
-            }
-            customWritable.setQuestionFive(builder.toString());
-            builder.delete(0, builder.length());
+//            if (indexIsANumber(splitLine[42])) {
+//                mostTaggedGenre = mostTaggedGenre.startsWith(" ") ? mostTaggedGenre.substring(1) : mostTaggedGenre;
+//                builder.append(mostTaggedGenre);
+//                builder.append(":::");
+//                builder.append(splitLine[50]);
+//                builder.append(":::");
+//                builder.append(splitLine[42]);
+//                builder.append("\n");
+//            }
+//            customWritable.setQuestionFive(builder.toString());
+//            builder.delete(0, builder.length());
 
             context.write(new Text(artist), customWritable);
         }
