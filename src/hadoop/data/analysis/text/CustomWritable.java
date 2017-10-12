@@ -13,7 +13,7 @@ public class CustomWritable implements Writable {
     //because not all files will contain question data
     private String questionOne = "0:0";
     private String questionTwo = "0:0";
-    private String questionThree = "0:0:0:0:0:0:0";
+    private String questionThree = "0";
     private String questionFour = "0:0";
     private String questionFive = "0";
     private String questionSix = "0";
@@ -33,7 +33,7 @@ public class CustomWritable implements Writable {
     public void readFields(DataInput dataInput) throws IOException {
         questionOne = WritableUtils.readString(dataInput);
         questionTwo = WritableUtils.readString(dataInput);
-//        questionThree = WritableUtils.readString(dataInput);
+        questionThree = WritableUtils.readString(dataInput);
         questionFour = WritableUtils.readString(dataInput);
         questionFive = WritableUtils.readString(dataInput);
 //        questionSix = WritableUtils.readString(dataInput);
@@ -53,7 +53,7 @@ public class CustomWritable implements Writable {
     public void write(DataOutput dataOutput) throws IOException {
         WritableUtils.writeString(dataOutput, questionOne);
         WritableUtils.writeString(dataOutput, questionTwo);
-//        WritableUtils.writeString(dataOutput, questionThree);
+        WritableUtils.writeString(dataOutput, questionThree);
         WritableUtils.writeString(dataOutput, questionFour);
         WritableUtils.writeString(dataOutput, questionFive);
 //        WritableUtils.writeString(dataOutput, questionSix);

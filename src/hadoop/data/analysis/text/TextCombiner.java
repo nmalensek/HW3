@@ -25,34 +25,10 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
         CustomWritable customWritable = new CustomWritable();
 
         String[] intermediateStringData;
-        double totalPopulation = 0;
-        double unmarriedMales = 0;
-        double unmarriedFemales = 0;
-        double totalRentals = 0;
-        double totalOwners = 0;
-        double totalHispanicPopulation = 0;
-        double hispanicMalesUnder18 = 0;
-        double hispanicFemalesUnder18 = 0;
-        double hispanicMales19to29 = 0;
-        double hispanicFemales19to29 = 0;
-        double hispanicMales30to39 = 0;
-        double hispanicFemales30to39 = 0;
-
-        double ruralHouseholds = 0;
-        double urbanHouseholds = 0;
-
-        //arrays filled with 0.0 to avoid null pointer exceptions
-        double totalHouses = 0;
-        String homeValues = "";
-        Double[] homeDoubles = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-
-        double totalRenters = 0;
-        String rentValues = "";
-        Double[] rentDoubles = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-
-        StringBuilder intermediateQuestionFour = new StringBuilder();
 
         StringBuilder intermediateQuestionOne = new StringBuilder();
+        StringBuilder intermediateQuestionThree = new StringBuilder();
+        StringBuilder intermediateQuestionFour = new StringBuilder();
         StringBuilder intermediateQuestionFive = new StringBuilder();
         StringBuilder intermediateQuestionEight = new StringBuilder();
         Map<String, String> genrePerArtistMap = new HashMap<>();
@@ -63,17 +39,6 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 
         double tempoTotal = 0.0;
         int songsWithTempoRecorded = 0;
-
-        double urbanPopulation = 0;
-        double ruralPopulation = 0;
-        double childrenUnder1To11 = 0;
-        double children12To17 = 0;
-        double hispanicChildrenUnder1To11 = 0;
-        double hispanicChildren12To17 = 0;
-        double totalMales = 0;
-        double totalFemales = 0;
-
-        double elderlyPopulation = 0;
 
         for (CustomWritable cw : values) {
 
@@ -110,6 +75,11 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
                 songsWithTempoRecorded += Integer.parseInt(intermediateStringData[1]);
             }
 
+            //question three
+            if (!cw.getQuestionThree().isEmpty()) {
+                intermediateQuestionThree.append(cw.getQuestionThree()).append(",,,");
+            }
+
             //question 4
             if (!cw.getQuestionFour().isEmpty()) {
                 intermediateQuestionFour.append(cw.getQuestionFour());
@@ -117,15 +87,19 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 
             //question 5 setup
             if (!cw.getQuestionFive().isEmpty()) {
-                String[] splitFive = cw.getQuestionFive().split(":::");
-                for (int i = 3; i < splitFive.length; i++) {
-                    String genreTag = splitFive[i];
+                String[] splitFive = cw.getQuestionFive().split("\n");
+                for (String genreTitleHotness : splitFive) {
+
+                    String genreTag = genreTitleHotness.split(":::")[0];
+                    String songTitle = genreTitleHotness.split(":::")[1];
+                    String songHotness = genreTitleHotness.split(":::")[2];
+
                     if (questionFiveMap.get(genreTag) == null) {
-                        questionFiveMap.put(genreTag, splitFive[0] + ":::" + splitFive[1] + ":::" + splitFive[2]);
+                        questionFiveMap.put(genreTag, songTitle + ":::" + songHotness);
                     } else {
-                        String existingSongsForTag = questionFiveMap.get(splitFive[i]);
+                        String existingSongsForTag = questionFiveMap.get(genreTag);
                         questionFiveMap.put(genreTag, existingSongsForTag + ",,," +
-                                splitFive[0] + ":::" + splitFive[1] + ":::" + splitFive[2]);
+                                songTitle + ":::" + songHotness);
                     }
                 }
             }
@@ -133,7 +107,7 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
             //question 7
             songsPerArtist += Integer.parseInt(cw.getQuestionSeven());
 
-            //question 8
+            //question 8 - put the tag and count in a map, updating count as necessary. then turn the map into a string
             intermediateStringData = cw.getQuestionEight().split(",,,");
 
             for (String allGenrePairs : intermediateStringData) {
@@ -163,31 +137,29 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 
         //question 5: calculate top 10 songs per genre for this artist
         StringBuilder q5 = new StringBuilder();
-        if (!customWritable.getQuestionFive().isEmpty()) {
-            for (String genreName : questionFiveMap.keySet()) {
-                ArrayList<String> titleHotnessPairs = new ArrayList<>();
-                titleHotnessPairs.addAll(Arrays.asList(questionFiveMap.get(genreName).split(",,,")));
-                ArrayList<String> tenList = new ArrayList<>();
+        for (String genreName : questionFiveMap.keySet()) {
+            ArrayList<String> titleHotnessPairs = new ArrayList<>();
+            titleHotnessPairs.addAll(Arrays.asList(questionFiveMap.get(genreName).split(",,,")));
+            ArrayList<String> tenList = new ArrayList<>();
 
-                for (int i = 0; i < 10; i++) {
-                    double largest = 0;
-                    String largestString = "";
-                    for (String titleHotness : titleHotnessPairs) {
-                        if (Double.parseDouble(titleHotness.split(":::")[1]) > largest) {
-                            largest = Double.parseDouble(titleHotness.split(":::")[1]);
-                            largestString = titleHotness.split(":::")[0];
-                        }
+            for (int i = 0; i < 10; i++) {
+                double largest = 0;
+                String largestString = "";
+                for (String titleHotness : titleHotnessPairs) {
+                    if (Double.parseDouble(titleHotness.split(":::")[1]) > largest) {
+                        largest = Double.parseDouble(titleHotness.split(":::")[1]);
+                        largestString = titleHotness.split(":::")[0];
                     }
-                    tenList.add(largestString + ":::" + largest + ":::" + key.toString());
-                    titleHotnessPairs.remove(largestString + ":::" + largest);
                 }
-                q5.append(genreName);
-                q5.append("---");
-                for (String topTen : tenList) {
-                    q5.append(topTen).append(",,,");
-                }
-                q5.append("\n");
+                tenList.add(largestString + ":::" + largest + ":::" + key.toString());
+                titleHotnessPairs.remove(largestString + ":::" + largest);
             }
+            q5.append(genreName);
+            q5.append("---");
+            for (String topTen : tenList) {
+                q5.append(topTen).append(",,,");
+            }
+            q5.append("\n");
         }
 
 //        //q1
@@ -195,8 +167,7 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 //        //q2
         customWritable.setQuestionTwo(tempoTotal + ":::" + songsWithTempoRecorded);
 //        //q3
-//        customWritable.setQuestionThree(totalHispanicPopulation +":"+hispanicMalesUnder18+":"+hispanicMales19to29+
-//        ":"+hispanicMales30to39+":"+hispanicFemalesUnder18+":"+hispanicFemales19to29+":"+hispanicFemales30to39);
+        customWritable.setQuestionThree(intermediateQuestionThree.toString());
 //        //q4
         customWritable.setQuestionFour(intermediateQuestionFour.toString());
 //        //q5

@@ -6,6 +6,7 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.util.hash.Hash;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -13,14 +14,12 @@ import java.util.*;
 public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     private MultipleOutputs multipleOutputs;
     private HashMap<String, String> totalGenreMap = new HashMap<>();
-    double totalTempo = 0.0;
-    double totalSongsWithTempo = 0.0;
+    private double totalTempo = 0.0;
+    private double totalSongsWithTempo = 0.0;
     private HashMap<String, HashMap<String, String>> fastSongsMap = new HashMap<>();
     private HashMap<String, HashMap<String, String>> genreHotnessMap = new HashMap<>();
-    private List<String> genreList = new ArrayList<>();
-    private List<Double> averageList = new ArrayList<>();
-    HashMap<String, String> titleHotnessMap = new HashMap<>();
     private HashMap<String, ArrayList<String>> topTenPerGenre = new HashMap<>();
+    private ArrayList<Double> danceabilityScores = new ArrayList<>();
 
     /**
      * Writes answers to each question in their own files.
@@ -35,8 +34,8 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
                 "Most commonly tagged genre per artist"), new Text(" \n"));
         multipleOutputs.write("question2", new Text("\nQuestion 2:\n" +
                 "Average tempo for all songs in the data set"), new Text(" \n"));
-//        multipleOutputs.write("question3", new Text("\nQuestion 3:\n" +
-//                "Median danceability score across all songs in the data set"), new Text(" \n"));
+        multipleOutputs.write("question3", new Text("\nQuestion 3:\n" +
+                "Median danceability score across all songs in the data set"), new Text(" \n"));
         multipleOutputs.write("question4", new Text("\nQuestion 4:\n" +
                 "Top 10 artists for fast songs (based on tempo, >= 120 bpm)"), new Text(" \n"));
         multipleOutputs.write("question5", new Text("\nQuestion 5:\n" +
@@ -69,7 +68,6 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         String mostTaggedGenre = "";
 //        StringBuilder questionFourBuilder = new StringBuilder();
 
-        int fastSongsPerArtist = 0;
         int songsPerArtist = 0;
         String[] q8TotalGenreCount;
         HashMap<String, String> genrePerArtistMap = new HashMap<>();
@@ -90,6 +88,20 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
                 totalSongsWithTempo += Integer.parseInt(cw.getQuestionTwo().split(":::")[1]);
             }
 
+            //question three
+            if(!cw.getQuestionThree().isEmpty()) {
+                String[] splitDanceScores = cw.getQuestionThree().split(",,,");
+                for (String score : splitDanceScores) {
+                    try {
+                        danceabilityScores.add(Double.parseDouble(score));
+                    } catch (NumberFormatException e) {
+
+                    }
+                }
+            }
+
+
+            //question 4
             if (!cw.getQuestionFour().isEmpty()) {
                 String[] splitFastSongs = cw.getQuestionFour().split(",,,");
                 for (String fastSong : splitFastSongs) {
@@ -98,22 +110,8 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
                     fastSongsPerArtistMap.put(title, tempo);
                 }
             }
-//
-//            if (!cw.getQuestionFive().isEmpty()) {
-//                String[] splitByGenre = cw.getQuestionFive().split("\n");
-//                for (String genreTitleHotness : splitByGenre) {
-//                    String genre = genreTitleHotness.split("---")[0];
-//                    String titleHotnessArtist = genreTitleHotness.split("---")[1];
-//
-//                    if (titleHotnessMap.get(genre) == null) {
-//                        titleHotnessMap.put(genre, titleHotnessArtist);
-//                    } else {
-//                        String currentPairs = titleHotnessMap.get(genre);
-//                        titleHotnessMap.put(genre, currentPairs + titleHotnessArtist);
-//                    }
-//                }
-//            }
 
+            //question 5 setup
             if (!cw.getQuestionFive().isEmpty()) {
                 String[] splitByGenre = cw.getQuestionFive().split("\n");
                 for (String genreTitleHotnessArtist : splitByGenre) {
@@ -143,23 +141,12 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
                 }
             }
 
-//                String[] commaSplitArray = genreTitleHotness.split(",,,");
-//                String genre = commaSplitArray[0];
-//                if (!genreList.contains(genre)) { genreList.add(genre); }
-//
-//                for (int i = 1; i < commaSplitArray.length; i++) {
-//                    String[] titleHotnessPair = commaSplitArray[i].split(":::");
-//
-//                    String title = titleHotnessPair[0];
-//                    String hotness = titleHotnessPair[1];
-//
-//                    titleHotnessPerArtist.put(title + ":" + key.toString(), hotness);
-//                }
 
+            //question 7
             songsPerArtist += Integer.parseInt(cw.getQuestionSeven());
 
+            //question8
             q8TotalGenreCount = cw.getQuestionEight().split(",,,");
-
             loopThroughArray(q8TotalGenreCount, totalGenreMap);
 
         }
@@ -185,24 +172,8 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         //add all artist's fast songs to map
         fastSongsMap.put(key.toString(), fastSongsPerArtistMap);
 
-        questionFiveTopTen(genreHotnessMap);
-
+//        multipleOutputs.write("question4", key, new Text(fastSongsPrint(fastSongsPerArtistMap)));
 //
-//        multipleOutputs.write("question3c", key, new Text(
-//                " Males: " + calculatePercentage(hispanicMales30to39, totalHispanicPopulation) +
-//                        "% | Females: " + calculatePercentage(hispanicFemales30to39, totalHispanicPopulation) +
-//                        "%"));
-//
-//        multipleOutputs.write("question4", key, new Text(
-//                " Rural: " + calculatePercentage(ruralHouseholds, (ruralHouseholds + urbanHouseholds)) +
-//                        "% | Urban: " + calculatePercentage(urbanHouseholds, (ruralHouseholds + urbanHouseholds)) +
-//                        "%"));
-
-//        multipleOutputs.write("question5", key, new Text(
-//                " " + calculateMedian(houseRangeMap, houseRanges.getRanges(), totalHouses)));
-//
-//        multipleOutputs.write("question6", key, new Text(
-//                " " + calculateMedian(rentRangeMap, rentRanges.getRanges(), totalRenters)));
 
         multipleOutputs.write("question7", key, new Text(" " + songsPerArtist + " songs"));
 
@@ -221,7 +192,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 
     /**
      * Close multiple outputs, otherwise the results might not be written to output files.
-     * Also writes questions 2, 3, and 8 because the answer isn't per key (artist).
+     * Also writes questions 2, 3, 5, and 8 because the answer isn't per key (artist).
      *
      * @param context MapReduce context
      * @throws IOException
@@ -229,11 +200,13 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
      */
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
+        questionFiveTopTen(genreHotnessMap);
         multipleOutputs.write("question2", "", new Text(
                 "\n" + "Total tempo: " + totalTempo + "\n" + "Songs with tempo: " + totalSongsWithTempo
                         + "\n" + "Average tempo: " + calculateAverage(totalTempo, totalSongsWithTempo)));
-//        multipleOutputs.write("question3", mostElderlyState, new Text(
-//                " " + currentMax + "%"));
+        multipleOutputs.write("question3", "", new Text(
+                "\nMedian danceability: " + calculateMedian(danceabilityScores)
+        + "\n" + "Out of total songs: " + danceabilityScores.size() + "\n" + danceabilityScores.toString()));
         multipleOutputs.write("question4", "", new Text("\n" + questionFour()));
         multipleOutputs.write("question5", "", new Text("\n" + questionFive()));
         multipleOutputs.write("question8", "", new Text("\n" + questionEight()));
@@ -241,11 +214,55 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         multipleOutputs.close();
     }
 
+    private String questionFour() {
+        StringBuilder fourBuilder = new StringBuilder();
+        ArrayList<String> topTenFastSongArtists = new ArrayList<>(questionFourTopTen(fastSongsMap));
+        for (String tempo : topTenFastSongArtists) {
+            fourBuilder.append(tempo).append("\n");
+        }
+        return fourBuilder.toString();
+    }
+
+    private String questionFive() {
+        StringBuilder fiveBuilder = new StringBuilder();
+        for (String genre : topTenPerGenre.keySet()) {
+            fiveBuilder.append(genre).append("\n");
+            ArrayList<String> topTen = topTenPerGenre.get(genre);
+
+            for (String song : topTen) {
+                fiveBuilder.append(song).append("\n");
+            }
+            fiveBuilder.append("\n\n");
+        }
+
+        return fiveBuilder.toString();
+    }
+
+    private String questionEight() {
+        //question 8 determine top 10
+        StringBuilder builder = new StringBuilder();
+        ArrayList<String> topTenGenreTags = new ArrayList<>(calculateTopTen(totalGenreMap));
+        for (String tag : topTenGenreTags) {
+            builder.append(tag);
+            builder.append("\n");
+        }
+
+        return builder.toString();
+    }
+
     private String calculateAverage(double numerator, double denominator) {
         DecimalFormat decimalFormat = new DecimalFormat("##.00");
         double average = (numerator / denominator);
 
         return decimalFormat.format(average);
+    }
+
+    private String fastSongsPrint(HashMap<String, String> map) {
+        StringBuilder builder = new StringBuilder();
+        for (String title : map.keySet()) {
+            builder.append(title).append(":").append(map.get(title)).append("\n");
+        }
+        return builder.toString();
     }
 
     private void loopThroughArray(String[] stringArray, HashMap<String, String> stringMap) {
@@ -346,83 +363,25 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         }
     }
 
-    private String questionFour() {
-        StringBuilder fourBuilder = new StringBuilder();
-        ArrayList<String> topTenFastSongArtists = new ArrayList<>(questionFourTopTen(fastSongsMap));
-        for (String tempo : topTenFastSongArtists) {
-            fourBuilder.append(tempo).append("\n");
-        }
-        return fourBuilder.toString();
-    }
 
-    private String questionFive() {
-        StringBuilder fiveBuilder = new StringBuilder();
-        for (String genre : topTenPerGenre.keySet()) {
-            fiveBuilder.append(genre).append("\n");
-            ArrayList<String> topTen = topTenPerGenre.get(genre);
 
-            for (String song : topTen) {
-                fiveBuilder.append(song).append("\n");
-            }
-            fiveBuilder.append("\n\n");
+    private String calculateMedian(ArrayList<Double> doubleList) {
+        Collections.sort(doubleList);
+        double median;
+
+        if (doubleList.size() % 2 == 0) {
+            int lower = (doubleList.size()/2) - 1;
+            int upper = (doubleList.size()/2);
+
+            median = (((doubleList.get(lower)) + doubleList.get(upper))/2);
+
+        } else {
+            int middle = new BigDecimal(doubleList.size()/2).setScale(2, BigDecimal.ROUND_HALF_UP).intValue();
+
+            median = doubleList.get(middle);
         }
 
-        return fiveBuilder.toString();
-    }
 
-    private String questionEight() {
-        //question 8 determine top 10
-        StringBuilder builder = new StringBuilder();
-        ArrayList<String> topTenGenreTags = new ArrayList<>(calculateTopTen(totalGenreMap));
-        for (String tag : topTenGenreTags) {
-            builder.append(tag);
-            builder.append("\n");
-        }
-
-        return builder.toString();
-    }
-
-
-    /**
-     * Calculates median, returns N/A if no iterations were performed (no data was collected).
-     * The current count is tracked because this is calculating the median from ranges, not from
-     * each data point.
-     *
-     * @param map         map of ranges (key) and quantity per range (value)
-     * @param dataArray   array of ranges
-     * @param totalNumber total number of the variable that's being examined (home values or rent ranges)
-     * @return answer
-     */
-
-    private String calculateMedian(Map<Integer, Double> map, String[] dataArray, double totalNumber) {
-        int currentCount = 0;
-        int iterations = 0;
-
-        double dividingPoint = totalNumber * 0.50;
-
-        for (Integer key : map.keySet()) {
-            currentCount += map.get(key);
-            iterations++;
-            if (currentCount > dividingPoint) {
-                break;
-            }
-        }
-
-        String relevantRange = "N/A";
-
-        if (iterations != 0) {
-            relevantRange = dataArray[iterations - 1];
-        }
-
-//        //debug
-//        String test = "";
-//        test += iterations + ":" + dividingPoint + ":" + totalNumber + "\n" + map.values().toString() + "\n";
-//        for (Integer key : map.keySet()) {
-//            test += "[";
-//            test += key.toString() + ", ";
-//            test += map.get(key) + "]\n";
-//        }
-//        test += "***" + relevantRange + "***";
-        return relevantRange;
+        return String.valueOf(median);
     }
 }

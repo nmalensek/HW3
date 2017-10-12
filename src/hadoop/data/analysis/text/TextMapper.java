@@ -5,9 +5,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.StringTokenizer;
 
 public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable> {
@@ -34,6 +31,7 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             String[] splitLine = line.split("\t");
             String artist = splitLine[11];
             StringBuilder builder = new StringBuilder();
+            String mostTaggedGenre = "";
 
             try {
                 Integer.parseInt(splitLine[0]);
@@ -65,6 +63,10 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
                     builder.append(tagFrequencyArray[i]);
                     builder.append(",,,");
 
+                    if (Double.parseDouble(tagFrequencyArray[i]) == 1.0) {
+                        mostTaggedGenre = genreArray[i];
+                    }
+
                 } catch (NumberFormatException e) {
                     //skips files with malformed data
                 }
@@ -86,7 +88,11 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
 
             //question 3 What is the median danceability score across all the songs in the data set?
 
-
+            String danceability = "";
+            if (indexIsANumber(splitLine[21])) {
+                danceability = splitLine[21];
+            }
+            customWritable.setQuestionThree(danceability);
 
 
             //question 4 Who are the top ten artists for fast songs (based on their tempo)?
@@ -118,29 +124,41 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             customWritable.setQuestionEight(builder.toString());
             builder.delete(0, builder.length());
 
-            //question 5 What are top ten songs based on their hotness in each genre? Please also provide the artist
-            //name and title for these songs.
-            if (hotnessIsANumber(splitLine[42])) {
-                String[] tagsArray = customWritable.getQuestionEight().split(",,,"); //re-use question 8 tag collection
-                for (String genreTag : tagsArray) {
-                    builder.append(genreTag.split(":::")[0]); //only get tag out
-                    builder.append(":::");
-                    builder.append(splitLine[50]); //song title
-                    builder.append(":::");
-                    builder.append(splitLine[42]); //song hotness
-                    builder.append("\n");
-                }
+//            //question 5 What are top ten songs based on their hotness in each genre? Please also provide the artist
+//            //name and title for these songs.
+//            if (indexIsANumber(splitLine[42])) {
+//                String[] tagsArray = customWritable.getQuestionEight().split(",,,"); //re-use question 8 tag collection
+//                for (String genreTag : tagsArray) {
+//                    builder.append(genreTag.split(":::")[0]); //only get tag out
+//                    builder.append(":::");
+//                    builder.append(splitLine[50]); //song title
+//                    builder.append(":::");
+//                    builder.append(splitLine[42]); //song hotness
+//                    builder.append("\n");
+//                }
+//            }
+//            customWritable.setQuestionFive(builder.toString()); //genre:title:hotness\n
+//            builder.delete(0, builder.length());
+
+            //question 5 1.0 frequency tag only
+            if (indexIsANumber(splitLine[42])) {
+                builder.append(mostTaggedGenre);
+                builder.append(":::");
+                builder.append(splitLine[50]);
+                builder.append(":::");
+                builder.append(splitLine[42]);
+                builder.append("\n");
             }
-            customWritable.setQuestionFive(builder.toString()); //genre:title:hotness\n
+            customWritable.setQuestionFive(builder.toString());
             builder.delete(0, builder.length());
 
             context.write(new Text(artist), customWritable);
         }
     }
 
-    private boolean hotnessIsANumber(String hotness) {
+    private boolean indexIsANumber(String shouldBeADouble) {
         try {
-            Double.parseDouble(hotness);
+            Double.parseDouble(shouldBeADouble);
             return true;
         } catch (NumberFormatException e) {
             return false;
