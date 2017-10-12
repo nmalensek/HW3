@@ -53,6 +53,15 @@ public class CalculationTest {
         return String.valueOf(median);
     }
 
+    private void averageTest() {
+        double testLong = 100000000;
+        int total = 3;
+
+        BigDecimal average = new BigDecimal((testLong / total)).setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        System.out.println(average.toString());
+    }
+
     private void mapTest(String key, Integer value) {
 
         if (testMap.containsKey(key)) {
@@ -68,7 +77,8 @@ public class CalculationTest {
 
     public static void main(String[] args) {
         CalculationTest calculationTest = new CalculationTest();
-        calculationTest.medianTest();
+//        calculationTest.medianTest();
+        calculationTest.averageTest();
     }
 
 

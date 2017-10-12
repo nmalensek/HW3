@@ -20,6 +20,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     private HashMap<String, HashMap<String, String>> genreHotnessMap = new HashMap<>();
     private HashMap<String, ArrayList<String>> topTenPerGenre = new HashMap<>();
     private ArrayList<Double> danceabilityScores = new ArrayList<>();
+    private HashMap<String, String> totalLoudnessPerYear = new HashMap<>();
 
     /**
      * Writes answers to each question in their own files.
@@ -40,8 +41,8 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
                 "Top 10 artists for fast songs (based on tempo, >= 120 bpm)"), new Text(" \n"));
         multipleOutputs.write("question5", new Text("\nQuestion 5:\n" +
                 "Top 10 songs by hotness per genre"), new Text(" \n"));
-//        multipleOutputs.write("question6", new Text("\nQuestion 6:\n" +
-//                "Mean loudness variance per year for all songs in the data set"), new Text(" \n"));
+        multipleOutputs.write("question6", new Text("\nQuestion 6:\n" +
+                "Mean loudness variance per year for all songs in the data set"), new Text(" \n"));
         multipleOutputs.write("question7", new Text("\nQuestion 7:\n" +
                 "Number of songs by each artist"), new Text(" \n"));
         multipleOutputs.write("question8", new Text("\nQuestion 8:\n" +
@@ -66,14 +67,11 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     protected void reduce(Text key, Iterable<CustomWritable> values, Context context) throws IOException, InterruptedException {
         String[] finalGenreCount;
         String mostTaggedGenre = "";
-//        StringBuilder questionFourBuilder = new StringBuilder();
 
         int songsPerArtist = 0;
         String[] q8TotalGenreCount;
         HashMap<String, String> genrePerArtistMap = new HashMap<>();
         HashMap<String, String> fastSongsPerArtistMap = new HashMap<>();
-
-        String[] totalGenreString;
 
         for (CustomWritable cw : values) {
 
@@ -99,7 +97,6 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
                     }
                 }
             }
-
 
             //question 4
             if (!cw.getQuestionFour().isEmpty()) {
@@ -141,6 +138,28 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
                 }
             }
 
+            //question 6
+            if (!cw.getQuestionSix().isEmpty()) {
+                String[] yearTotals = cw.getQuestionSix().split("\n");
+                for (String yearData : yearTotals) {
+                    String year = yearData.split(":")[0];
+                    double loudness = Double.parseDouble(yearData.split(":")[1]);
+                    int totalCount = Integer.parseInt(yearData.split(":")[2]);
+
+                    if (totalLoudnessPerYear.get(year) == null) {
+                        totalLoudnessPerYear.put(year, loudness + ":" + totalCount);
+                    } else {
+                        String existingLoudnessCount = totalLoudnessPerYear.get(year);
+                        double existingLoudness = Double.parseDouble(existingLoudnessCount.split(":")[0]);
+                        int existingCount = Integer.parseInt(existingLoudnessCount.split(":")[1]);
+
+                        existingLoudness += loudness;
+                        existingCount += totalCount;
+
+                        totalLoudnessPerYear.put(year, existingLoudness + ":" + existingCount);
+                    }
+                }
+            }
 
             //question 7
             songsPerArtist += Integer.parseInt(cw.getQuestionSeven());
@@ -168,12 +187,8 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         multipleOutputs.write("question1", key, new Text(
                 " " + mostTaggedGenre));
 
-
         //add all artist's fast songs to map
         fastSongsMap.put(key.toString(), fastSongsPerArtistMap);
-
-//        multipleOutputs.write("question4", key, new Text(fastSongsPrint(fastSongsPerArtistMap)));
-//
 
         multipleOutputs.write("question7", key, new Text(" " + songsPerArtist + " songs"));
 
@@ -187,7 +202,6 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 //                        ":" + calculatePercentage(totalMales, totalPopulation) +
 //                        ":" + calculatePercentage(totalFemales, totalPopulation)));
 
-//        stateWithMostElderlyPeople(elderlyMap);
     }
 
     /**
@@ -209,6 +223,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         + "\n" + "Out of total songs: " + danceabilityScores.size() + "\n" + danceabilityScores.toString()));
         multipleOutputs.write("question4", "", new Text("\n" + questionFour()));
         multipleOutputs.write("question5", "", new Text("\n" + questionFive()));
+        multipleOutputs.write("question6", "", new Text("\n" + questionSix()));
         multipleOutputs.write("question8", "", new Text("\n" + questionEight()));
         super.cleanup(context);
         multipleOutputs.close();
@@ -361,6 +376,19 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
             }
             topTenPerGenre.put(genre, topTenList);
         }
+    }
+
+    private String questionSix() {
+        StringBuilder answer = new StringBuilder();
+        for (String year : totalLoudnessPerYear.keySet()) {
+            double yearLoudness = Double.parseDouble(totalLoudnessPerYear.get(year).split(":")[0]);
+            int yearCount = Integer.parseInt(totalLoudnessPerYear.get(year).split(":")[1]);
+
+            double average = (yearLoudness/yearCount);
+            answer.append(year).append(" average loudness: ").append(average).append("\n");
+        }
+
+        return answer.toString();
     }
 
 

@@ -35,6 +35,8 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
         Map<String, String> questionEightMap = new HashMap<>();
         HashMap<String, String> questionFiveMap = new HashMap<>();
 
+        HashMap<String, String> totalLoudnessPerYear = new HashMap<>();
+
         int songsPerArtist = 0;
 
         double tempoTotal = 0.0;
@@ -104,6 +106,26 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
                 }
             }
 
+            //question 6
+            if (!cw.getQuestionSix().isEmpty()) {
+                //year:loudness:count
+                String year = cw.getQuestionSix().split(":::")[0];
+                double loudness = Double.parseDouble(cw.getQuestionSix().split(":::")[1]);
+                int count = Integer.parseInt(cw.getQuestionSix().split(":::")[2]);
+
+                if (totalLoudnessPerYear.get(year) == null) {
+                    totalLoudnessPerYear.put(year, loudness + ":" + count);
+                } else {
+                    double existingYearLoudness = Double.parseDouble(totalLoudnessPerYear.get(year).split(":")[0]);
+                    int existingYearCount = Integer.parseInt(totalLoudnessPerYear.get(year).split(":")[1]);
+
+                    existingYearLoudness += loudness;
+                    existingYearCount += count;
+
+                    totalLoudnessPerYear.put(year, existingYearLoudness + ":" + existingYearCount);
+                }
+            }
+
             //question 7
             songsPerArtist += Integer.parseInt(cw.getQuestionSeven());
 
@@ -162,25 +184,30 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
             q5.append("\n");
         }
 
-//        //q1
+        //question 6: get all years,loudness:count from map to pass string to reducer
+        StringBuilder q6 = new StringBuilder();
+        for (String year : totalLoudnessPerYear.keySet()) {
+            double yearLoudness = Double.parseDouble(totalLoudnessPerYear.get(year).split(":")[0]);
+            int yearCount = Integer.parseInt(totalLoudnessPerYear.get(year).split(":")[1]);
+
+            q6.append(year).append(":").append(yearLoudness).append(":").append(yearCount).append("\n");
+        }
+
+        //q1
         customWritable.setQuestionOne(intermediateQuestionOne.toString());
-//        //q2
+        //q2
         customWritable.setQuestionTwo(tempoTotal + ":::" + songsWithTempoRecorded);
-//        //q3
+        //q3
         customWritable.setQuestionThree(intermediateQuestionThree.toString());
-//        //q4
+        //q4
         customWritable.setQuestionFour(intermediateQuestionFour.toString());
-//        //q5
+        //q5
         customWritable.setQuestionFive(q5.toString());
-//        //q6
-//        customWritable.setQuestionSixTotalRenters(String.valueOf(totalRenters));
-//        for (int i = 0; i < rentDoubles.length; i++) {
-//            rentValues += String.valueOf(rentDoubles[i] + ":");
-//        }
-//        customWritable.setQuestionSixRenterValues(rentValues);
+        //q6
+        customWritable.setQuestionSix(q6.toString());
         //q7
         customWritable.setQuestionSeven(String.valueOf(songsPerArtist));
-//        //q8
+        //q8
         customWritable.setQuestionEight(intermediateQuestionEight.toString());
 //        //q9
 //        customWritable.setQuestionNine(urbanPopulation + ":" + ruralPopulation + ":" + childrenUnder1To11 + ":" +

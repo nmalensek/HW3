@@ -104,7 +104,7 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             }
             customWritable.setQuestionFour(fastSongs);
 
-            //question 6: On a per-year basis, what is the mean variance of loudness across the songs within the datas et?
+            //question 6: On a per-year basis, what is the mean variance of loudness across the songs within the data set?
 
             String loudness = "";
             String year = "";
@@ -112,7 +112,7 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
                 loudness = splitLine[27];
                 year = splitLine[53];
             }
-            customWritable.setQuestionSix(loudness + ":::" + year);
+            customWritable.setQuestionSix(year + ":::" + loudness + ":::" + "1"); //year:loudness:count
 
 
             //question 7: How many songs does each artist have in this data set?
