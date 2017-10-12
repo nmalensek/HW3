@@ -75,7 +75,6 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             customWritable.setQuestionOne(builder.toString());
             builder.delete(0, builder.length());
 
-
             //question 2 What is the average tempo across all the songs in the data set?
             String tempoScore = "N/A";
             String totalSongs = "N/A";
@@ -94,7 +93,6 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             }
             customWritable.setQuestionThree(danceability);
 
-
             //question 4 Who are the top ten artists for fast songs (based on their tempo)?
             String title = splitLine[50];
             String tempo = splitLine[47];
@@ -108,12 +106,14 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
 
             String loudness = "";
             String year = "";
-            if (indexIsANumber(loudness)) {
-                loudness = splitLine[27];
-                year = splitLine[53];
+            loudness = splitLine[27];
+            year = splitLine[53];
+            try {
+                Integer.parseInt(year);
+            } catch (NumberFormatException e) {
+                year = "";
             }
             customWritable.setQuestionSix(year + ":::" + loudness + ":::" + "1"); //year:loudness:count
-
 
             //question 7: How many songs does each artist have in this data set?
             String songsPerArtist = "1";

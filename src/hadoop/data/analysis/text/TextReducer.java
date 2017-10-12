@@ -20,7 +20,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     private HashMap<String, HashMap<String, String>> genreHotnessMap = new HashMap<>();
     private HashMap<String, ArrayList<String>> topTenPerGenre = new HashMap<>();
     private ArrayList<Double> danceabilityScores = new ArrayList<>();
-    private HashMap<String, String> totalLoudnessPerYear = new HashMap<>();
+    private TreeMap<String, String> totalLoudnessPerYear = new TreeMap<>();
 
     /**
      * Writes answers to each question in their own files.
