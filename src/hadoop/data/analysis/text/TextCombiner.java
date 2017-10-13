@@ -79,7 +79,7 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 
             //question three
             if (!cw.getQuestionThree().isEmpty()) {
-                intermediateQuestionThree.append(cw.getQuestionThree()).append(",,,");
+                intermediateQuestionThree.append(cw.getQuestionThree()).append(",,");
             }
 
             //question 4

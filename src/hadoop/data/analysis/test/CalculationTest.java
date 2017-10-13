@@ -13,18 +13,17 @@ public class CalculationTest {
     }
 
     private void medianTest() {
-        ArrayList<Double> scores = new ArrayList<>();
-        ArrayList<Double> oddScores = new ArrayList<>();
+        TreeMap<Double, Double> scores = new TreeMap<>();
+        TreeMap<Double, Double> oddScores = new TreeMap<>();
 
         Double[] doubles = {20.0, 11.5, 24.5, 100.10, 75.3, 5.1, 40.4, 50.0, 14.0, 9.0, 15.5, 99.3, 23.5, 78.1, 77.0,
         90.0, 43.0, 54.1, 55.5, 80.0};
 
-        scores.addAll(Arrays.asList(doubles));
-        oddScores.addAll(Arrays.asList(doubles));
-        oddScores.add(13.0);
-
-        Collections.sort(scores);
-        Collections.sort(oddScores);
+        for (Double d : doubles) {
+            scores.put(d, d);
+            oddScores.put(d, d);
+        }
+        oddScores.put(13.0, 13.0);
 
         System.out.println(scores.toString());
         System.out.println(oddScores.toString());
@@ -34,20 +33,41 @@ public class CalculationTest {
 
     }
 
-    private String getMedian(ArrayList<Double> list) {
-        int listSize = list.size();
+    private String getMedian(TreeMap<Double, Double> treeMap) {
+        int mapSize = treeMap.size();
         double median = 0;
+        int half;
+        int upper;
 
-        if (listSize % 2 == 0) {
-            int lower = (listSize/2) - 1;
-            int upper = (listSize/2);
+        if (mapSize % 2 == 0) {
+            half = (mapSize/2) - 1;
+            upper = (mapSize/2);
 
-            median = (((list.get(lower)) + list.get(upper))/2);
+            double mLower = 0.0;
+            double mUpper = 0.0;
+            int currentCount = 0;
+
+            for (Double d : treeMap.keySet()) {
+                if (currentCount == half) { mLower = treeMap.get(d); }
+                if (currentCount == upper) { mUpper = treeMap.get(d); }
+                currentCount++;
+            }
+
+            median = ((mLower + mUpper)/2);
 
         } else {
-            int middle = new BigDecimal(listSize/2).setScale(2, BigDecimal.ROUND_HALF_UP).intValue();
+            half = mapSize/2;
 
-            median = list.get(middle);
+            int currentCount = 0;
+
+            for (Double key : treeMap.keySet()) {
+                if (currentCount == half) {
+                    median = treeMap.get(key);
+                    break;
+                }
+                currentCount++;
+            }
+
         }
 
         return String.valueOf(median);
@@ -77,8 +97,8 @@ public class CalculationTest {
 
     public static void main(String[] args) {
         CalculationTest calculationTest = new CalculationTest();
-//        calculationTest.medianTest();
-        calculationTest.averageTest();
+        calculationTest.medianTest();
+//        calculationTest.averageTest();
     }
 
 

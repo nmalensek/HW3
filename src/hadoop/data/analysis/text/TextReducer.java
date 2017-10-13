@@ -19,7 +19,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     private HashMap<String, HashMap<String, String>> fastSongsMap = new HashMap<>();
     private HashMap<String, HashMap<String, String>> genreHotnessMap = new HashMap<>();
     private HashMap<String, ArrayList<String>> topTenPerGenre = new HashMap<>();
-    private ArrayList<Double> danceabilityScores = new ArrayList<>();
+    private TreeMap<Double, Double> danceabilityScores = new TreeMap<>();
     private TreeMap<String, String> totalLoudnessPerYear = new TreeMap<>();
 
     /**
@@ -88,10 +88,10 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 
             //question three
             if(!cw.getQuestionThree().isEmpty()) {
-                String[] splitDanceScores = cw.getQuestionThree().split(",,,");
+                String[] splitDanceScores = cw.getQuestionThree().split(",,");
                 for (String score : splitDanceScores) {
                     try {
-                        danceabilityScores.add(Double.parseDouble(score));
+                        danceabilityScores.put(Double.parseDouble(score), Double.parseDouble(score));
                     } catch (NumberFormatException e) {
 
                     }
@@ -393,20 +393,16 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 
 
 
-    private String calculateMedian(ArrayList<Double> doubleList) {
-        Collections.sort(doubleList);
-        double median;
+    private String calculateMedian(TreeMap<Double, Double> doubleTreeMap) {
+        double median = 0.0;
+        int total = doubleTreeMap.size();
+        int halfway;
+        int upper;
 
-        if (doubleList.size() % 2 == 0) {
-            int lower = (doubleList.size()/2) - 1;
-            int upper = (doubleList.size()/2);
-
-            median = (((doubleList.get(lower)) + doubleList.get(upper))/2);
-
+        if (total % 2 == 0) {
+            halfway = 0;
         } else {
-            int middle = new BigDecimal(doubleList.size()/2).setScale(2, BigDecimal.ROUND_HALF_UP).intValue();
-
-            median = doubleList.get(middle);
+            halfway = total;
         }
 
 
