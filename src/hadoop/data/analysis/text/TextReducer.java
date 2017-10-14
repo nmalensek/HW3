@@ -90,11 +90,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
             if(!cw.getQuestionThree().isEmpty()) {
                 String[] splitDanceScores = cw.getQuestionThree().split(",,");
                 for (String score : splitDanceScores) {
-                    try {
                         danceabilityScores.put(Double.parseDouble(score), Double.parseDouble(score));
-                    } catch (NumberFormatException e) {
-
-                    }
                 }
             }
 
@@ -220,7 +216,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
                         + "\n" + "Average tempo: " + calculateAverage(totalTempo, totalSongsWithTempo)));
         multipleOutputs.write("question3", "", new Text(
                 "\nMedian danceability: " + calculateMedian(danceabilityScores)
-        + "\n" + "Out of total songs: " + danceabilityScores.size() + "\n" + danceabilityScores.toString()));
+        + "\n" + "Out of total songs: " + danceabilityScores.size()));
         multipleOutputs.write("question4", "", new Text("\n" + questionFour()));
         multipleOutputs.write("question5", "", new Text("\n" + questionFive()));
         multipleOutputs.write("question6", "", new Text("\n" + questionSix()));
@@ -395,16 +391,40 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 
     private String calculateMedian(TreeMap<Double, Double> doubleTreeMap) {
         double median = 0.0;
-        int total = doubleTreeMap.size();
+        int mapSize = doubleTreeMap.size();
         int halfway;
         int upper;
+        int currentCount = 0;
 
-        if (total % 2 == 0) {
-            halfway = 0;
+        if (mapSize % 2 == 0) {
+            halfway = ((mapSize/2) - 1);
+            upper = mapSize/2;
+
+            double medianLower = 0;
+            double medianUpper = 0;
+
+            for (Double score : doubleTreeMap.keySet()) {
+                if (currentCount == halfway) { medianLower = doubleTreeMap.get(score); }
+                if (currentCount == upper) {
+                    medianUpper = doubleTreeMap.get(score);
+                    break;
+                }
+                currentCount++;
+            }
+
+            median = ((medianLower + medianUpper)/2);
+
         } else {
-            halfway = total;
-        }
+            halfway = mapSize/2;
 
+            for (Double danceScore : doubleTreeMap.keySet()) {
+                if (currentCount == halfway) {
+                    median = doubleTreeMap.get(danceScore);
+                    break;
+                }
+                currentCount++;
+            }
+        }
 
         return String.valueOf(median);
     }
