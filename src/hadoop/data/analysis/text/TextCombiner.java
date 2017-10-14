@@ -29,7 +29,6 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
         StringBuilder intermediateQuestionOne = new StringBuilder();
         StringBuilder intermediateQuestionThree = new StringBuilder();
         StringBuilder intermediateQuestionFour = new StringBuilder();
-        StringBuilder intermediateQuestionFive = new StringBuilder();
         StringBuilder intermediateQuestionEight = new StringBuilder();
         Map<String, String> genrePerArtistMap = new HashMap<>();
         Map<String, String> questionEightMap = new HashMap<>();
@@ -42,7 +41,13 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
         double tempoTotal = 0.0;
         int songsWithTempoRecorded = 0;
 
+        String fourTest = "";
+
         for (CustomWritable cw : values) {
+
+            if (!cw.getFourTest().isEmpty()) {
+                fourTest = cw.getFourTest();
+            }
 
             //question one
             intermediateStringData = cw.getQuestionOne().split(",,,");
@@ -193,6 +198,7 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
             q6.append(year).append(":").append(yearLoudness).append(":").append(yearCount).append("\n");
         }
 
+
         //q1
         customWritable.setQuestionOne(intermediateQuestionOne.toString());
         //q2
@@ -209,6 +215,8 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
         customWritable.setQuestionSeven(String.valueOf(songsPerArtist));
         //q8
         customWritable.setQuestionEight(intermediateQuestionEight.toString());
+
+//        customWritable.setFourTest(fourTest);
 //        //q9
 //        customWritable.setQuestionNine(urbanPopulation + ":" + ruralPopulation + ":" + childrenUnder1To11 + ":" +
 //        children12To17 + ":" + hispanicChildrenUnder1To11 + ":" + hispanicChildren12To17 + ":" + totalMales +

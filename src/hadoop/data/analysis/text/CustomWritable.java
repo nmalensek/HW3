@@ -20,7 +20,7 @@ public class CustomWritable implements Writable {
     private String questionSeven = "0:0";
     private String questionEight = "0:0";
     private String questionNine = "0:0:0:0:0:0:0:0";
-    private String fourTest = "0";
+    private String fourTest = "";
 
     public CustomWritable() {}
 
