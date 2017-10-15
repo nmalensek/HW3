@@ -19,10 +19,12 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     private TreeMap<Double, Double> danceabilityScores = new TreeMap<>();
     private TreeMap<String, String> totalLoudnessPerYear = new TreeMap<>();
     private TreeMap<String, String> q9StatsPerYear = new TreeMap<>();
-    private double uniqueCounter = 0.000000000;
+    private double uniqueCounter = 0.00000000;
     private double q5uniqueCounter = 0.00000000;
+    private double q4uniqueCounter = 0.00000000;
     private String fourTest = "";
     private HashMap<String, TreeMap<Double, String>> q5Map = new HashMap<>();
+    private TreeMap<Double, String> q4TreeMap = new TreeMap<>();
 
     /**
      * Writes answers to each question in their own files.
@@ -40,7 +42,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         multipleOutputs.write("question3", new Text("\nQuestion 3:\n" +
                 "Median danceability score across all songs in the data set"), new Text(" \n"));
         multipleOutputs.write("question4", new Text("\nQuestion 4:\n" +
-                "Top 10 artists for fast songs (based on tempo, >= 120 bpm)"), new Text(" \n"));
+                "Top 10 artists for fast songs (tempo >= 120 bpm)"), new Text(" \n"));
         multipleOutputs.write("question5", new Text("\nQuestion 5:\n" +
                 "Top 10 songs by hotness per genre"), new Text(" \n"));
         multipleOutputs.write("question6", new Text("\nQuestion 6:\n" +
@@ -103,20 +105,28 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
                     } else {
                         double uniqueScore = (Double.parseDouble(score) + uniqueCounter);
                         danceabilityScores.put(uniqueScore, Double.parseDouble(score));
-                        uniqueCounter = uniqueCounter + 0.00000001;
+                        uniqueCounter = uniqueCounter + 0.0000001;
                     }
                 }
             }
 
-//            //question 4
-//            if (!cw.getQuestionFour().isEmpty()) {
-//                String[] splitFastSongs = cw.getQuestionFour().split(",,,");
-//                for (String fastSong : splitFastSongs) {
-//                    String title = fastSong.split(":::")[0];
-//                    String tempo = fastSong.split(":::")[1];
-//                    fastSongsPerArtistMap.put(title, tempo);
-//                }
-//            }
+            //question 4
+            if (!cw.getQuestionFour().isEmpty()) {
+                String[] splitFastSongs = cw.getQuestionFour().split(",,,");
+                for (String song : splitFastSongs) {
+                    String artistTitle = key.toString() + "-" + song.split(":::")[0];
+                    double tempo = Double.parseDouble(song.split(":::")[1]);
+
+                    if (q4TreeMap.get(tempo) == null) {
+                        q4TreeMap.put(tempo, artistTitle);
+                    } else {
+                        tempo = tempo + q4uniqueCounter;
+                        q4uniqueCounter = q4uniqueCounter + 0.00000001;
+
+                        q4TreeMap.put(tempo, artistTitle);
+                    }
+                }
+            }
 
             //question 5 setup
             if (!cw.getQuestionFive().isEmpty()) {
@@ -136,7 +146,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 
                             if (existingHotnessArtistTitleMap.containsKey(hotness)) {
                                 hotness = hotness + q5uniqueCounter;
-                                q5uniqueCounter = q5uniqueCounter + 0.000000001;
+                                q5uniqueCounter = q5uniqueCounter + 0.00000001;
 
                                 existingHotnessArtistTitleMap.put(hotness, artistTitle);
                             } else {
@@ -229,8 +239,8 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         multipleOutputs.write("question1", key, new Text(
                 " " + mostTaggedGenre));
 
-        //q4 add all artist's fast songs to map
-        fastSongsMap.put(key.toString(), fastSongsPerArtistMap);
+//        //q4 add all artist's fast songs to map
+//        fastSongsMap.put(key.toString(), fastSongsPerArtistMap);
 
         multipleOutputs.write("question7", key, new Text(" " + songsPerArtist + " songs"));
 
@@ -263,7 +273,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         multipleOutputs.write("question3", "", new Text(
                 "\nMedian danceability: " + calculateMedian(danceabilityScores)
         + "\n" + "Out of total songs: " + danceabilityScores.size()));
-//        multipleOutputs.write("question4", "", new Text("\n" + questionFour()));
+        multipleOutputs.write("question4", "", new Text("\n" + questionFour()));
         multipleOutputs.write("question5", "", new Text("\n" + questionFive()));
         multipleOutputs.write("question6", "", new Text("\n" + questionSix()));
         multipleOutputs.write("question8", "", new Text("\n" + questionEight()));
@@ -274,10 +284,15 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
 
     private String questionFour() {
         StringBuilder fourBuilder = new StringBuilder();
-        ArrayList<String> topTenFastSongArtists = new ArrayList<>(questionFourTopTen(fastSongsMap));
-        for (String tempo : topTenFastSongArtists) {
-            fourBuilder.append(tempo).append("\n");
+        NavigableSet<Double> highestTempoFirst = q4TreeMap.descendingKeySet();
+        int i = 0;
+
+        for (Double tempo : highestTempoFirst) {
+            fourBuilder.append(tempo).append(":").append(q4TreeMap.get(tempo)).append("\n");
+            i++;
+            if (i == 10) {break;}
         }
+
         return fourBuilder.toString();
     }
 

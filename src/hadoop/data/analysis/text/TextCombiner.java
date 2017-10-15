@@ -85,15 +85,22 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
             }
 
             //question 4
-//            if (!cw.getQuestionFour().isEmpty()) {
-//                intermediateQuestionFour.append(cw.getQuestionFour());
-//            }
+            if (!cw.getQuestionFour().isEmpty()) {
+                intermediateQuestionFour.append(cw.getQuestionFour());
+            }
 
             //question 5 setup
             if (!cw.getQuestionFive().isEmpty()) {
                 String genreTag = cw.getQuestionFive().split(":::")[0];
                 String artistTitle = key.toString() + "-" + cw.getQuestionFive().split(":::")[1];
-                double songHotness = Double.parseDouble(cw.getQuestionFive().split(":::")[2]);
+                double songHotness = 0.0;
+                try {
+                    songHotness = Double.parseDouble(cw.getQuestionFive().split(":::")[2]);
+                } catch (NumberFormatException e) {
+                    if (cw.getQuestionFive().split(":::")[2].startsWith(":")) {
+                        songHotness = Double.parseDouble(cw.getQuestionFive().split(":::")[2].substring(1));
+                    }
+                }
 
                 if (questionFiveTreeMap.get(genreTag) == null) {
                     TreeMap<Double, String> hotnessArtistTitleMap = new TreeMap<>();
@@ -232,7 +239,7 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
         //q3
         customWritable.setQuestionThree(intermediateQuestionThree.toString());
         //q4
-//        customWritable.setQuestionFour(intermediateQuestionFour.toString());
+        customWritable.setQuestionFour(intermediateQuestionFour.toString());
         //q5
         customWritable.setQuestionFive(q5.toString());
         //q6

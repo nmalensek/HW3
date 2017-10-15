@@ -23,7 +23,6 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
     @Override
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
         CustomWritable customWritable = new CustomWritable();
-        Charset encoder = Charset.forName("iso8859-1");
 
         // tokenize into lines.
         StringTokenizer itr = new StringTokenizer(value.toString(), "\n");
@@ -96,14 +95,14 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             }
             customWritable.setQuestionThree(danceability);
 
-//            //question 4 Who are the top ten artists for fast songs (based on their tempo)?
-//            String title = splitLine[50];
-//            String tempo = splitLine[47];
-//            String fastSongs = "";
-//            if (!tempo.startsWith("[") && Double.parseDouble(tempo) >= 120.0) {
-//                fastSongs = "test" + ":::" + tempo + ",,,";
-//            }
-//            customWritable.setQuestionFour(fastSongs);
+            //question 4 Who are the top ten artists for fast songs (based on their tempo)?
+            String title = splitLine[50];
+            String tempo = splitLine[47];
+            String fastSongs = "";
+            if (!tempo.startsWith("[") && Double.parseDouble(tempo) >= 250.0 && !title.contains("\t")) {
+                fastSongs = title + ":::" + tempo + ",,,";
+            }
+            customWritable.setQuestionFour(fastSongs);
 
             //question 6: On a per-year basis, what is the mean variance of loudness across the songs within the data set?
 
@@ -162,7 +161,6 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
                     }
                     builder.append(":::");
                     builder.append(splitLine[42]);
-                    builder.append(",,,");
                 }
                 customWritable.setQuestionFive(builder.toString());
                 builder.delete(0, builder.length());
