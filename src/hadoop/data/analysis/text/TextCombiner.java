@@ -36,18 +36,20 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 
         HashMap<String, String> totalLoudnessPerYear = new HashMap<>();
 
+        HashMap<String, String> q9StatsPerYear = new HashMap<>();
+
         int songsPerArtist = 0;
 
         double tempoTotal = 0.0;
         int songsWithTempoRecorded = 0;
 
-        String fourTest = "";
+        double q9Hotness = 0.0;
+        double q9Loudness = 0.0;
+        double q9Duration = 0.0;
+        double q9Tempo = 0.0;
+        int q9Count = 0;
 
         for (CustomWritable cw : values) {
-
-            if (!cw.getFourTest().isEmpty()) {
-                fourTest = cw.getFourTest();
-            }
 
             //question one
             intermediateStringData = cw.getQuestionOne().split(",,,");
@@ -88,13 +90,13 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
             }
 
             //question 4
-            if (!cw.getQuestionFour().isEmpty()) {
-                intermediateQuestionFour.append(cw.getQuestionFour());
-            }
+//            if (!cw.getQuestionFour().isEmpty()) {
+//                intermediateQuestionFour.append(cw.getQuestionFour());
+//            }
 
             //question 5 setup
             if (!cw.getQuestionFive().isEmpty()) {
-                String[] splitFive = cw.getQuestionFive().split("\n");
+                String[] splitFive = cw.getQuestionFive().split(",,,");
                 for (String genreTitleHotness : splitFive) {
 
                     String genreTag = genreTitleHotness.split(":::")[0];
@@ -160,6 +162,36 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
                 intermediateQuestionEight.append(",,,");
             }
 
+            //question 9
+            if (!cw.getQuestionNine().isEmpty()) {
+                double hotness = Double.parseDouble(cw.getQuestionNine().split(":::")[0]);
+                double loudness = Double.parseDouble(cw.getQuestionNine().split(":::")[1]);
+                double duration = Double.parseDouble(cw.getQuestionNine().split(":::")[2]);
+                double tempo = Double.parseDouble(cw.getQuestionNine().split(":::")[3]);
+                String year = cw.getQuestionNine().split(":::")[4];
+                int count = Integer.parseInt(cw.getQuestionNine().split(":::")[5]);
+
+                if (q9StatsPerYear.get(year) == null) {
+                    q9StatsPerYear.put(year, hotness + ":" + loudness + ":" + duration + ":" + tempo + ":" + count);
+                } else {
+                    double existingYearHotness = Double.parseDouble(q9StatsPerYear.get(year).split(":")[0]);
+                    double existingYearLoudness = Double.parseDouble(q9StatsPerYear.get(year).split(":")[1]);
+                    double existingYearDuration = Double.parseDouble(q9StatsPerYear.get(year).split(":")[2]);
+                    double existingYearTempo = Double.parseDouble(q9StatsPerYear.get(year).split(":")[3]);
+                    int existingYearCount = Integer.parseInt(q9StatsPerYear.get(year).split(":")[4]);
+
+                    existingYearHotness += hotness;
+                    existingYearLoudness += loudness;
+                    existingYearDuration += duration;
+                    existingYearTempo += tempo;
+                    existingYearCount += count;
+
+                    q9StatsPerYear.put(year, existingYearHotness + ":"
+                            + existingYearLoudness + ":" + existingYearDuration + ":" +
+                            existingYearTempo + ":" + existingYearCount);
+                }
+            }
+
         }
 
         //question 5: calculate top 10 songs per genre for this artist
@@ -173,8 +205,10 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
                 double largest = 0;
                 String largestString = "";
                 for (String titleHotness : titleHotnessPairs) {
-                    if (Double.parseDouble(titleHotness.split(":::")[1]) > largest) {
-                        largest = Double.parseDouble(titleHotness.split(":::")[1]);
+                    String hotness = titleHotness.split(":::")[1];
+                    hotness = hotness.replaceAll(":","");
+                    if (Double.parseDouble(hotness) > largest) {
+                        largest = Double.parseDouble(hotness);
                         largestString = titleHotness.split(":::")[0];
                     }
                 }
@@ -198,6 +232,11 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
             q6.append(year).append(":").append(yearLoudness).append(":").append(yearCount).append("\n");
         }
 
+        //question 9: get all years' hotness, loudness, duration, tempo, count
+        StringBuilder q9 = new StringBuilder();
+        for (String year : q9StatsPerYear.keySet()) {
+            q9.append(year).append(":").append(q9StatsPerYear.get(year)).append("\n");
+        }
 
         //q1
         customWritable.setQuestionOne(intermediateQuestionOne.toString());
@@ -206,7 +245,7 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
         //q3
         customWritable.setQuestionThree(intermediateQuestionThree.toString());
         //q4
-        customWritable.setQuestionFour(intermediateQuestionFour.toString());
+//        customWritable.setQuestionFour(intermediateQuestionFour.toString());
         //q5
         customWritable.setQuestionFive(q5.toString());
         //q6
@@ -215,12 +254,10 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
         customWritable.setQuestionSeven(String.valueOf(songsPerArtist));
         //q8
         customWritable.setQuestionEight(intermediateQuestionEight.toString());
+        //q9
+        customWritable.setQuestionNine(q9.toString());
 
 //        customWritable.setFourTest(fourTest);
-//        //q9
-//        customWritable.setQuestionNine(urbanPopulation + ":" + ruralPopulation + ":" + childrenUnder1To11 + ":" +
-//        children12To17 + ":" + hispanicChildrenUnder1To11 + ":" + hispanicChildren12To17 + ":" + totalMales +
-//        ":" + totalFemales);
 
         context.write(key, customWritable);
     }

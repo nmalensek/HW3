@@ -11,15 +11,15 @@ public class CustomWritable implements Writable {
 
     //define strings with initial 0 values to avoid number format and null pointer exceptions
     //because not all files will contain question data
-    private String questionOne = "0:0";
-    private String questionTwo = "0:0";
-    private String questionThree = "0";
-    private String questionFour = "0:0";
-    private String questionFive = "0";
-    private String questionSix = "0";
-    private String questionSeven = "0:0";
-    private String questionEight = "0:0";
-    private String questionNine = "0:0:0:0:0:0:0:0";
+    private String questionOne = "0";
+    private String questionTwo = "";
+    private String questionThree = "";
+    private String questionFour = "";
+    private String questionFive = "";
+    private String questionSix = "";
+    private String questionSeven = "";
+    private String questionEight = "";
+    private String questionNine = "";
     private String fourTest = "";
 
     public CustomWritable() {}
@@ -39,7 +39,7 @@ public class CustomWritable implements Writable {
         questionSix = WritableUtils.readString(dataInput);
         questionSeven = WritableUtils.readString(dataInput);
         questionEight = WritableUtils.readString(dataInput);
-//        questionNine = WritableUtils.readString(dataInput);
+        questionNine = WritableUtils.readString(dataInput);
         fourTest = WritableUtils.readString(dataInput);
     }
 
@@ -59,7 +59,7 @@ public class CustomWritable implements Writable {
         WritableUtils.writeString(dataOutput, questionSix);
         WritableUtils.writeString(dataOutput, questionSeven);
         WritableUtils.writeString(dataOutput, questionEight);
-//        WritableUtils.writeString(dataOutput, questionNine);
+        WritableUtils.writeString(dataOutput, questionNine);
         WritableUtils.writeString(dataOutput, fourTest);
     }
 
