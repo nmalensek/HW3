@@ -61,7 +61,8 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             for (int i = 0; i < tagFrequencyArray.length; i++) {
                 try {
                     if (Double.parseDouble(tagFrequencyArray[i]) == 1.0) {
-                        mostTaggedGenre = genreArray[i];
+                        mostTaggedGenre = genreArray[i].startsWith(" ") ?
+                                genreArray[i].substring(1) : genreArray[i];
 
                         builder.append(mostTaggedGenre);
                         builder.append(":::");
@@ -154,12 +155,11 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
                 if (indexIsANumber(splitLine[42])) {
                     builder.append(mostTaggedGenre);
                     builder.append(":::");
-//                    if (splitLine[50].contains("\t")) {
-//                        builder.append("N/A");
-//                    } else {
-//                        builder.append(splitLine[50]);
-//                    }
-                    builder.append("test");
+                    if (splitLine[50].contains("\t")) {
+                        throw new Exception();
+                    } else {
+                        builder.append(splitLine[50]);
+                    }
                     builder.append(":::");
                     builder.append(splitLine[42]);
                     builder.append(",,,");
@@ -169,7 +169,6 @@ public class TextMapper extends Mapper<LongWritable, Text, Text, CustomWritable>
             } catch (Exception ignored) {
 
             }
-
 
             //q9 what are the hotness to loudness, length, and tempo ratios per year?
             if (indexIsANumber(splitLine[42])) {

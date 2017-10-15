@@ -33,21 +33,16 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
         Map<String, String> genrePerArtistMap = new HashMap<>();
         Map<String, String> questionEightMap = new HashMap<>();
         HashMap<String, String> questionFiveMap = new HashMap<>();
+        HashMap<String, TreeMap<Double, String>> questionFiveTreeMap = new HashMap<>();
 
         HashMap<String, String> totalLoudnessPerYear = new HashMap<>();
-
         HashMap<String, String> q9StatsPerYear = new HashMap<>();
 
+        double uniqueCounter = 0.000000001;
         int songsPerArtist = 0;
 
         double tempoTotal = 0.0;
         int songsWithTempoRecorded = 0;
-
-        double q9Hotness = 0.0;
-        double q9Loudness = 0.0;
-        double q9Duration = 0.0;
-        double q9Tempo = 0.0;
-        int q9Count = 0;
 
         for (CustomWritable cw : values) {
 
@@ -96,19 +91,24 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 
             //question 5 setup
             if (!cw.getQuestionFive().isEmpty()) {
-                String[] splitFive = cw.getQuestionFive().split(",,,");
-                for (String genreTitleHotness : splitFive) {
+                String genreTag = cw.getQuestionFive().split(":::")[0];
+                String artistTitle = key.toString() + "-" + cw.getQuestionFive().split(":::")[1];
+                double songHotness = Double.parseDouble(cw.getQuestionFive().split(":::")[2]);
 
-                    String genreTag = genreTitleHotness.split(":::")[0];
-                    String songTitle = genreTitleHotness.split(":::")[1];
-                    String songHotness = genreTitleHotness.split(":::")[2];
+                if (questionFiveTreeMap.get(genreTag) == null) {
+                    TreeMap<Double, String> hotnessArtistTitleMap = new TreeMap<>();
+                    hotnessArtistTitleMap.put(songHotness, artistTitle);
+                    questionFiveTreeMap.put(genreTag, hotnessArtistTitleMap);
+                } else {
+                    TreeMap<Double, String> existingMap = questionFiveTreeMap.get(genreTag);
 
-                    if (questionFiveMap.get(genreTag) == null) {
-                        questionFiveMap.put(genreTag, songTitle + ":::" + songHotness);
+                    if (existingMap.containsKey(songHotness)) {
+                        songHotness = songHotness + uniqueCounter;
+                        uniqueCounter = uniqueCounter + 0.000000001;
+
+                        existingMap.put(songHotness, artistTitle);
                     } else {
-                        String existingSongsForTag = questionFiveMap.get(genreTag);
-                        questionFiveMap.put(genreTag, existingSongsForTag + ",,," +
-                                songTitle + ":::" + songHotness);
+                        existingMap.put(songHotness, artistTitle);
                     }
                 }
             }
@@ -194,31 +194,18 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 
         }
 
-        //question 5: calculate top 10 songs per genre for this artist
         StringBuilder q5 = new StringBuilder();
-        for (String genreName : questionFiveMap.keySet()) {
-            ArrayList<String> titleHotnessPairs = new ArrayList<>();
-            titleHotnessPairs.addAll(Arrays.asList(questionFiveMap.get(genreName).split(",,,")));
-            ArrayList<String> tenList = new ArrayList<>();
+        for (String tag : questionFiveTreeMap.keySet()) {
+            TreeMap<Double, String> hotnessArtistTitleMap = questionFiveTreeMap.get(tag);
+            NavigableSet<Double> reverseKeys = hotnessArtistTitleMap.descendingKeySet();
+            int i = 0;
 
-            for (int i = 0; i < 10; i++) {
-                double largest = 0;
-                String largestString = "";
-                for (String titleHotness : titleHotnessPairs) {
-                    String hotness = titleHotness.split(":::")[1];
-                    hotness = hotness.replaceAll(":","");
-                    if (Double.parseDouble(hotness) > largest) {
-                        largest = Double.parseDouble(hotness);
-                        largestString = titleHotness.split(":::")[0];
-                    }
-                }
-                tenList.add(largestString + ":::" + largest + ":::" + key.toString());
-                titleHotnessPairs.remove(largestString + ":::" + largest);
-            }
-            q5.append(genreName);
-            q5.append("---");
-            for (String topTen : tenList) {
-                q5.append(topTen).append(",,,");
+            q5.append(tag).append("---");
+            for (Double hotnessRating : reverseKeys) {
+                q5.append(hotnessRating).append(":::")
+                        .append(hotnessArtistTitleMap.get(hotnessRating)).append(",,,");
+                i++;
+                if (i == 10) {break;}
             }
             q5.append("\n");
         }

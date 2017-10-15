@@ -9,9 +9,7 @@ import java.io.IOException;
 
 public class CustomWritable implements Writable {
 
-    //define strings with initial 0 values to avoid number format and null pointer exceptions
-    //because not all files will contain question data
-    private String questionOne = "0";
+    private String questionOne = "";
     private String questionTwo = "";
     private String questionThree = "";
     private String questionFour = "";
