@@ -1,5 +1,6 @@
 package hadoop.data.analysis.text;
 
+import hadoop.data.analysis.util.PearsonCorrelation;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
@@ -13,9 +14,6 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     private HashMap<String, String> totalGenreMap = new HashMap<>();
     private double totalTempo = 0.0;
     private double totalSongsWithTempo = 0.0;
-    private HashMap<String, HashMap<String, String>> fastSongsMap = new HashMap<>();
-    private HashMap<String, HashMap<String, String>> genreHotnessMap = new HashMap<>();
-    private HashMap<String, ArrayList<String>> topTenPerGenre = new HashMap<>();
     private TreeMap<Double, Double> danceabilityScores = new TreeMap<>();
     private TreeMap<String, String> totalLoudnessPerYear = new TreeMap<>();
     private TreeMap<String, String> q9StatsPerYear = new TreeMap<>();
@@ -25,6 +23,11 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     private String fourTest = "";
     private HashMap<String, TreeMap<Double, String>> q5Map = new HashMap<>();
     private TreeMap<Double, String> q4TreeMap = new TreeMap<>();
+    StringBuilder q9Hotness = new StringBuilder();
+    StringBuilder q9Loudness = new StringBuilder();
+    StringBuilder q9Duration = new StringBuilder();
+    StringBuilder q9Tempo = new StringBuilder();
+    int q9TotalCount = 0;
 
     /**
      * Writes answers to each question in their own files.
@@ -53,7 +56,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
                 "Top 10 most popular genres songs in the data set are tagged with"), new Text(" \n"));
         multipleOutputs.write("question9", new Text("\nQuestion 9:\n" +
                         "What are the average hotness, loudness, duration, and tempo of songs per year," +
-                        " and the ratio of hotness to the other measures per year?"),
+                        " and which of the other measures is hotness most correlated with?"),
                 new Text(" \n"));
     }
 
@@ -77,7 +80,6 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         String[] q8TotalGenreCount;
         HashMap<String, String> genrePerArtistMap = new HashMap<>();
         HashMap<String, String> fastSongsPerArtistMap = new HashMap<>();
-
 
         for (CustomWritable cw : values) {
 
@@ -220,6 +222,15 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
                 }
             }
 
+            //q9p2
+            if (!cw.getQuestionNineCorrelation().isEmpty()) {
+                q9Hotness.append(cw.getQuestionNineCorrelation().split("\n")[0]).append(":::");
+                q9Loudness.append(cw.getQuestionNineCorrelation().split("\n")[1]).append(":::");
+                q9Duration.append(cw.getQuestionNineCorrelation().split("\n")[2]).append(":::");
+                q9Tempo.append(cw.getQuestionNineCorrelation().split("\n")[3]).append(":::");
+                q9TotalCount += Integer.parseInt(cw.getQuestionNineCorrelation().split("\n")[4]);
+            }
+
         }
 
         //question 1 determine largest
@@ -239,20 +250,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         multipleOutputs.write("question1", key, new Text(
                 " " + mostTaggedGenre));
 
-//        //q4 add all artist's fast songs to map
-//        fastSongsMap.put(key.toString(), fastSongsPerArtistMap);
-
         multipleOutputs.write("question7", key, new Text(" " + songsPerArtist + " songs"));
-
-//        multipleOutputs.write("question9", key, new Text(
-//                calculatePercentage(urbanPopulation, totalPopulation) + ":" +
-//                        calculatePercentage(ruralPopulation, totalPopulation) +
-//                        ":" + calculatePercentage(childrenUnder1To11, totalPopulation) +
-//                        ":" + calculatePercentage(children12To17, totalPopulation) +
-//                        ":" + calculatePercentage(hispanicChildrenUnder1To11, totalPopulation) +
-//                        ":" + calculatePercentage(hispanicChildren12To17, totalPopulation) +
-//                        ":" + calculatePercentage(totalMales, totalPopulation) +
-//                        ":" + calculatePercentage(totalFemales, totalPopulation)));
 
     }
 
@@ -277,7 +275,8 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         multipleOutputs.write("question5", "", new Text("\n" + questionFive()));
         multipleOutputs.write("question6", "", new Text("\n" + questionSix()));
         multipleOutputs.write("question8", "", new Text("\n" + questionEight()));
-        multipleOutputs.write("question9", "", new Text("\n" + questionNine()));
+        multipleOutputs.write("question9", "", new Text("\n" + questionNine()
+                + "\n\n" + questionNineCorrelations()));
         super.cleanup(context);
         multipleOutputs.close();
     }
@@ -464,9 +463,9 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
             String averageDuration = decimalFormat.format(duration/count);
             String averageTempo = decimalFormat.format(tempo/count);
 
-            String hotnessLoudnessRatio = decimalFormat.format((hotness/loudness));
-            String hotnessDurationRatio = decimalFormat.format(hotness/duration);
-            String hotnessTempoRatio = decimalFormat.format(hotness/tempo);
+            double hotnessLoudnessRatio = (hotness/loudness);
+            double hotnessDurationRatio = (hotness/duration);
+            double hotnessTempoRatio = (hotness/tempo);
 
             answer.append(year).append(":").append(averageHotness).append(":").append(averageLoudness).append(":")
                     .append(averageDuration).append(":").append(averageTempo).append(",,,")
@@ -477,7 +476,18 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         return answer.toString();
     }
 
+    private String questionNineCorrelations() {
+        PearsonCorrelation correlation = new PearsonCorrelation(
+                q9Hotness.toString(), q9Loudness.toString(), q9Duration.toString(),
+                q9Tempo.toString(), q9TotalCount);
 
+
+
+        correlation.convertToLists();
+        correlation.calculateAverages();
+
+        return q9Hotness.toString();
+    }
 
     private String calculateMedian(TreeMap<Double, Double> doubleTreeMap) {
         double median = 0.0;

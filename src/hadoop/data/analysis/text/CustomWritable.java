@@ -18,6 +18,7 @@ public class CustomWritable implements Writable {
     private String questionSeven = "";
     private String questionEight = "";
     private String questionNine = "";
+    private String questionNineCorrelation = "";
     private String fourTest = "";
 
     public CustomWritable() {}
@@ -38,6 +39,7 @@ public class CustomWritable implements Writable {
         questionSeven = WritableUtils.readString(dataInput);
         questionEight = WritableUtils.readString(dataInput);
         questionNine = WritableUtils.readString(dataInput);
+        questionNineCorrelation = WritableUtils.readString(dataInput);
         fourTest = WritableUtils.readString(dataInput);
     }
 
@@ -58,6 +60,7 @@ public class CustomWritable implements Writable {
         WritableUtils.writeString(dataOutput, questionSeven);
         WritableUtils.writeString(dataOutput, questionEight);
         WritableUtils.writeString(dataOutput, questionNine);
+        WritableUtils.writeString(dataOutput, questionNineCorrelation);
         WritableUtils.writeString(dataOutput, fourTest);
     }
 
@@ -88,11 +91,9 @@ public class CustomWritable implements Writable {
     public String getQuestionNine() {return questionNine;}
     public void setQuestionNine(String questionNine) {this.questionNine = questionNine;}
 
-    public String getFourTest() {
-        return fourTest;
-    }
+    public String getQuestionNineCorrelation() { return questionNineCorrelation; }
+    public void setQuestionNineCorrelation(String questionNineCorrelation) { this.questionNineCorrelation = questionNineCorrelation; }
 
-    public void setFourTest(String fourTest) {
-        this.fourTest = fourTest;
-    }
+    public String getFourTest() { return fourTest; }
+    public void setFourTest(String fourTest) { this.fourTest = fourTest; }
 }
