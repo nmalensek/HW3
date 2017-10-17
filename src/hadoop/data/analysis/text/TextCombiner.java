@@ -32,7 +32,6 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
         StringBuilder intermediateQuestionEight = new StringBuilder();
         Map<String, String> genrePerArtistMap = new HashMap<>();
         Map<String, String> questionEightMap = new HashMap<>();
-        HashMap<String, String> questionFiveMap = new HashMap<>();
         HashMap<String, TreeMap<Double, String>> questionFiveTreeMap = new HashMap<>();
 
         HashMap<String, String> totalLoudnessPerYear = new HashMap<>();
@@ -43,12 +42,6 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
 
         double tempoTotal = 0.0;
         int songsWithTempoRecorded = 0;
-
-        StringBuilder q9Hotness = new StringBuilder();
-        StringBuilder q9Loudness = new StringBuilder();
-        StringBuilder q9Duration = new StringBuilder();
-        StringBuilder q9Tempo = new StringBuilder();
-        int totalCount = 0;
 
         for (CustomWritable cw : values) {
 
@@ -205,15 +198,6 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
                 }
             }
 
-            //q9 correlation between hotness and other measures
-            if (!cw.getQuestionNine().isEmpty()) {
-                q9Hotness.append(cw.getQuestionNine().split(":::")[0]).append(":::");
-                q9Loudness.append(cw.getQuestionNine().split(":::")[1]).append(":::");
-                q9Duration.append(cw.getQuestionNine().split(":::")[2]).append(":::");
-                q9Tempo.append(cw.getQuestionNine().split(":::")[3]).append(":::");
-                totalCount = Integer.parseInt(cw.getQuestionNine().split(":::")[5]);
-            }
-
         }
 
         StringBuilder q5 = new StringBuilder();
@@ -247,11 +231,6 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
             q9.append(year).append(":").append(q9StatsPerYear.get(year)).append("\n");
         }
 
-        q9Hotness.append("\n");
-        q9Loudness.append("\n");
-        q9Duration.append("\n");
-        q9Tempo.append("\n");
-
         //q1
         customWritable.setQuestionOne(intermediateQuestionOne.toString());
         //q2
@@ -270,9 +249,6 @@ public class TextCombiner extends Reducer<Text, CustomWritable, Text, CustomWrit
         customWritable.setQuestionEight(intermediateQuestionEight.toString());
         //q9
         customWritable.setQuestionNine(q9.toString());
-        //q9p2
-        customWritable.setQuestionNineCorrelation(q9Hotness.toString() + q9Loudness.toString()
-                + q9Duration.toString() + q9Tempo.toString() + totalCount);
 
 //        customWritable.setFourTest(fourTest);
 

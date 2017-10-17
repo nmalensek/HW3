@@ -7,11 +7,6 @@ import java.util.TreeMap;
 
 public class PearsonCorrelation {
 
-    private String hotness;
-    private String loudness;
-    private String duration;
-    private String tempo;
-    private int totalSongs;
     private LinkedList<Double> hotnessList = new LinkedList<>();
     private LinkedList<Double> loudnessList = new LinkedList<>();
     private LinkedList<Double> durationList = new LinkedList<>();
@@ -20,24 +15,16 @@ public class PearsonCorrelation {
     private double loudnessAverage;
     private double durationAverage;
     private double tempoAverage;
-    private HashMap<Double, Double> sumHotnessMap = new HashMap<>();
-    private HashMap<Double, Double> sumLoudnessMap = new HashMap<>();
-    private HashMap<Double, Double> sumDurationMap = new HashMap<>();
-    private HashMap<Double, Double> sumTempoMap = new HashMap<>();
+    private double hotnessLoudness;
+    private double hotnessDuration;
+    private double hotnessTempo;
 
-    public PearsonCorrelation(String hotness, String loudness, String duration, String tempo, int totalSongs) {
-            this.hotness = hotness;
-            this.loudness = loudness;
-            this.duration = duration;
-            this.tempo = tempo;
-            this.totalSongs = totalSongs;
-    }
-
-    public void convertToLists() {
-        convertStringToDoubleList(hotness, hotnessList);
-        convertStringToDoubleList(loudness, loudnessList);
-        convertStringToDoubleList(duration, durationList);
-        convertStringToDoubleList(tempo, tempoList);
+    public PearsonCorrelation(LinkedList<Double> hotness, LinkedList<Double> loudness,
+                              LinkedList<Double> duration, LinkedList<Double> tempo) {
+        hotnessList = hotness;
+        loudnessList = loudness;
+        durationList = duration;
+        tempoList = tempo;
     }
 
     public void calculateAverages() {
@@ -47,13 +34,30 @@ public class PearsonCorrelation {
         tempoAverage = averageForAList(tempoList);
     }
 
-    public void getSums() {
+    public String getCorrelations() {
+        StringBuilder correlations = new StringBuilder();
+        hotnessLoudness = correlationFromList(hotnessList, hotnessAverage, loudnessList, loudnessAverage);
+        hotnessDuration = correlationFromList(hotnessList, hotnessAverage, durationList, durationAverage);
+        hotnessTempo = correlationFromList(hotnessList, hotnessAverage, tempoList, tempoAverage);
 
+        correlations.append("Hotness:Loudness correlation: ").append(hotnessLoudness).append("\n");
+        correlations.append("Hotness:Duration correlation: ").append(hotnessDuration).append("\n");
+        correlations.append("Hotness:Tempo correlation: ").append(hotnessTempo).append("\n");
+
+        correlations.append("\n");
+        correlations.append(hotnessAverage).append("\n").append(loudnessAverage).append("\n")
+                .append(durationAverage).append("\n").append(tempoAverage);
+        correlations.append("\n\n").append(hotnessList.size()).append("\n").append(tempoList.size());
+        return correlations.toString();
     }
 
-    private void convertStringToDoubleList(String originString, LinkedList<Double> destList) {
-        for (String element : originString.split(":::")) {
-            destList.add(Double.parseDouble(element));
+    private void convertStringToDoubleList(LinkedList<String> originList, LinkedList<Double> destList) {
+        try {
+            for (String element : originList) {
+                destList.add(Double.parseDouble(element));
+            }
+        } catch (NumberFormatException ignored) {
+
         }
     }
 
@@ -67,8 +71,8 @@ public class PearsonCorrelation {
         return (totalCount/totalElements);
     }
 
-    private double sumFromList(LinkedList<Double> originList, LinkedList<Double> destList,
-                                          double originMean, double destMean) {
+    private double correlationFromList(LinkedList<Double> originList, double originMean,
+                                       LinkedList<Double> destList, double destMean) {
         TreeMap<Integer, Double> subtractedAMap = new TreeMap<>();
         TreeMap<Integer, Double> subtractedBMap = new TreeMap<>();
 
@@ -103,8 +107,8 @@ public class PearsonCorrelation {
 
         double totalATimesB = 0.0;
         for (Integer index : intermediateAMap.keySet()) {
-            double a = intermediateAMap.get(index);
-            double b = intermediateBMap.get(index);
+            double a = subtractedAMap.get(index);
+            double b = subtractedBMap.get(index);
 
             totalATimesB += (a * b);
         }

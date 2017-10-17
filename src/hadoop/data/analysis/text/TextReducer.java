@@ -1,6 +1,7 @@
 package hadoop.data.analysis.text;
 
 import hadoop.data.analysis.util.PearsonCorrelation;
+import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
@@ -23,11 +24,6 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     private String fourTest = "";
     private HashMap<String, TreeMap<Double, String>> q5Map = new HashMap<>();
     private TreeMap<Double, String> q4TreeMap = new TreeMap<>();
-    StringBuilder q9Hotness = new StringBuilder();
-    StringBuilder q9Loudness = new StringBuilder();
-    StringBuilder q9Duration = new StringBuilder();
-    StringBuilder q9Tempo = new StringBuilder();
-    int q9TotalCount = 0;
 
     /**
      * Writes answers to each question in their own files.
@@ -55,8 +51,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         multipleOutputs.write("question8", new Text("\nQuestion 8:\n" +
                 "Top 10 most popular genres songs in the data set are tagged with"), new Text(" \n"));
         multipleOutputs.write("question9", new Text("\nQuestion 9:\n" +
-                        "What are the average hotness, loudness, duration, and tempo of songs per year," +
-                        " and which of the other measures is hotness most correlated with?"),
+                        "What are the average hotness, loudness, duration, and tempo of songs per year?"),
                 new Text(" \n"));
     }
 
@@ -79,7 +74,6 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         int songsPerArtist = 0;
         String[] q8TotalGenreCount;
         HashMap<String, String> genrePerArtistMap = new HashMap<>();
-        HashMap<String, String> fastSongsPerArtistMap = new HashMap<>();
 
         for (CustomWritable cw : values) {
 
@@ -221,16 +215,6 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
                     }
                 }
             }
-
-            //q9p2
-            if (!cw.getQuestionNineCorrelation().isEmpty()) {
-                q9Hotness.append(cw.getQuestionNineCorrelation().split("\n")[0]).append(":::");
-                q9Loudness.append(cw.getQuestionNineCorrelation().split("\n")[1]).append(":::");
-                q9Duration.append(cw.getQuestionNineCorrelation().split("\n")[2]).append(":::");
-                q9Tempo.append(cw.getQuestionNineCorrelation().split("\n")[3]).append(":::");
-                q9TotalCount += Integer.parseInt(cw.getQuestionNineCorrelation().split("\n")[4]);
-            }
-
         }
 
         //question 1 determine largest
@@ -275,8 +259,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         multipleOutputs.write("question5", "", new Text("\n" + questionFive()));
         multipleOutputs.write("question6", "", new Text("\n" + questionSix()));
         multipleOutputs.write("question8", "", new Text("\n" + questionEight()));
-        multipleOutputs.write("question9", "", new Text("\n" + questionNine()
-                + "\n\n" + questionNineCorrelations()));
+        multipleOutputs.write("question9", "", new Text("\n" + questionNine()));
         super.cleanup(context);
         multipleOutputs.close();
     }
@@ -376,64 +359,6 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         return tenList;
     }
 
-    private ArrayList<String> questionFourTopTen(HashMap<String, HashMap<String, String>> map) {
-        HashMap<String, HashMap<String, String>> splittableMapCopy = new HashMap<>(map);
-        ArrayList<String> splittableTenList = new ArrayList<>();
-
-        for (int i = 0; i < 10; i++) {
-            double fastestTempo = 0;
-            String fastestTitle = "";
-            String fastestArtist = "";
-            for (String artist : splittableMapCopy.keySet()) {
-                if (splittableMapCopy.get(artist).isEmpty()) {
-                    continue;
-                }
-
-                HashMap<String, String> fastestSongsPerArtist = splittableMapCopy.get(artist);
-                for (String title : fastestSongsPerArtist.keySet()) {
-                    double tempo = Double.parseDouble(fastestSongsPerArtist.get(title));
-
-                    if (tempo > fastestTempo) {
-                        fastestTempo = tempo;
-                        fastestTitle = title;
-                        fastestArtist = artist;
-                    }
-                }
-            }
-            splittableMapCopy.get(fastestArtist).remove(fastestTitle); //remove fastest song from copied map
-            splittableTenList.add(fastestTempo + ":" + fastestTitle + ":" + fastestArtist);
-        }
-        return splittableTenList;
-    }
-
-//    private void questionFiveTopTen(HashMap<String, HashMap<String, String>> fiveMap) {
-//        HashMap<String, HashMap<String, String>> fiveMapCopy = new HashMap<>(fiveMap);
-//
-//        for (String genre : fiveMapCopy.keySet()) {
-//            ArrayList<String> topTenList = new ArrayList<>();
-//            for (int i = 0; i < 10; i++) {
-//                double mostHotness = 0;
-//                String hottestTitle = "";
-//                String hottestArtist = "";
-//
-//
-//                HashMap<String, String> hottestSongsPerGenre = fiveMapCopy.get(genre);
-//                for (String titleArtist : hottestSongsPerGenre.keySet()) {
-//                    double hotness = Double.parseDouble(hottestSongsPerGenre.get(titleArtist));
-//
-//                    if (hotness > mostHotness) {
-//                        mostHotness = hotness;
-//                        hottestTitle = titleArtist.split(":")[0];
-//                        hottestArtist = titleArtist.split(":")[1];
-//                    }
-//                }
-//                fiveMapCopy.get(genre).remove(hottestTitle + ":" + hottestArtist);
-//                topTenList.add(mostHotness + ":" + hottestTitle + ":" + hottestArtist);
-//            }
-//            topTenPerGenre.put(genre, topTenList);
-//        }
-//    }
-
     private String questionSix() {
         StringBuilder answer = new StringBuilder();
         for (String year : totalLoudnessPerYear.keySet()) {
@@ -474,19 +399,6 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         }
 
         return answer.toString();
-    }
-
-    private String questionNineCorrelations() {
-        PearsonCorrelation correlation = new PearsonCorrelation(
-                q9Hotness.toString(), q9Loudness.toString(), q9Duration.toString(),
-                q9Tempo.toString(), q9TotalCount);
-
-
-
-        correlation.convertToLists();
-        correlation.calculateAverages();
-
-        return q9Hotness.toString();
     }
 
     private String calculateMedian(TreeMap<Double, Double> doubleTreeMap) {

@@ -92,7 +92,7 @@ public class CorrelationTest {
             totalATimesB += (a * b);
         }
 //        System.out.println("ab: " + totalATimesB);
-        
+
         System.out.println(totalATimesB/(Math.sqrt(totalSquareA * totalSquareB)));
     }
 
