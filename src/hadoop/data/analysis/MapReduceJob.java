@@ -104,6 +104,7 @@ public class MapReduceJob {
         MultipleOutputs.addNamedOutput(job, "question7", TextOutputFormat.class, Text.class, Text.class);
         MultipleOutputs.addNamedOutput(job, "question8", TextOutputFormat.class, Text.class, Text.class);
         MultipleOutputs.addNamedOutput(job, "question9", TextOutputFormat.class, Text.class, Text.class);
+        MultipleOutputs.addNamedOutput(job, "question9b", TextOutputFormat.class, Text.class, Text.class);
     }
 
     public static void main(String[] args) throws IOException {

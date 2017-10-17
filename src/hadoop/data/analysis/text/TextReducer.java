@@ -24,6 +24,9 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
     private String fourTest = "";
     private HashMap<String, TreeMap<Double, String>> q5Map = new HashMap<>();
     private TreeMap<Double, String> q4TreeMap = new TreeMap<>();
+    private LinkedList<Double> q9HotnessCorrelation = new LinkedList<>();
+    private LinkedList<Double> q9TempoCorrelation = new LinkedList<>();
+    private LinkedList<Double> q9LoudnessCorrelation = new LinkedList<>();
 
     /**
      * Writes answers to each question in their own files.
@@ -53,6 +56,9 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         multipleOutputs.write("question9", new Text("\nQuestion 9:\n" +
                         "What are the average hotness, loudness, duration, and tempo of songs per year?"),
                 new Text(" \n"));
+        multipleOutputs.write("question9b", new Text("\nQuestion 9:\n" +
+                        "Are hotness and tempo correlated?"),
+                new Text(" \n"));
     }
 
     /**
@@ -74,6 +80,8 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         int songsPerArtist = 0;
         String[] q8TotalGenreCount;
         HashMap<String, String> genrePerArtistMap = new HashMap<>();
+        double[] hotnessArray;
+        double[] tempoArray;
 
         for (CustomWritable cw : values) {
 
@@ -194,6 +202,9 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
                     double tempo = Double.parseDouble(q9Data.split(":")[4]);
                     int count = Integer.parseInt(q9Data.split(":")[5]);
 
+                    q9HotnessCorrelation.add(hotness);
+                    q9TempoCorrelation.add(tempo);
+
                     if (q9StatsPerYear.get(year) == null) {
                         q9StatsPerYear.put(year, hotness + ":" + loudness + ":" + duration + ":" + tempo + ":" + count);
                     } else {
@@ -260,6 +271,7 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
         multipleOutputs.write("question6", "", new Text("\n" + questionSix()));
         multipleOutputs.write("question8", "", new Text("\n" + questionEight()));
         multipleOutputs.write("question9", "", new Text("\n" + questionNine()));
+        multipleOutputs.write("question9b", "", new Text(q9B()));
         super.cleanup(context);
         multipleOutputs.close();
     }
@@ -397,6 +409,19 @@ public class TextReducer extends Reducer<Text, CustomWritable, Text, Text> {
                     .append(hotnessLoudnessRatio).append(":").append(hotnessDurationRatio).append(":")
                     .append(hotnessTempoRatio).append("\n");
         }
+
+        return answer.toString();
+    }
+
+    private String q9B() {
+        StringBuilder answer = new StringBuilder();
+        PearsonCorrelation correlation = new PearsonCorrelation();
+
+        answer.append(correlation.getCorrelations(q9HotnessCorrelation, "Hotness", q9TempoCorrelation, "Tempo"));
+        answer.append("\n");
+        answer.append(correlation.getCorrelations(q9HotnessCorrelation, "Hotness", q9LoudnessCorrelation, "Loudness"));
+        answer.append("\n");
+        answer.append(correlation.getCorrelations(q9TempoCorrelation, "Tempo", q9LoudnessCorrelation, "Loudness"));
 
         return answer.toString();
     }

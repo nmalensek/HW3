@@ -1,53 +1,30 @@
 package hadoop.data.analysis.util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.TreeMap;
 
 public class PearsonCorrelation {
 
-    private LinkedList<Double> hotnessList = new LinkedList<>();
-    private LinkedList<Double> loudnessList = new LinkedList<>();
-    private LinkedList<Double> durationList = new LinkedList<>();
-    private LinkedList<Double> tempoList = new LinkedList<>();
-    private double hotnessAverage;
-    private double loudnessAverage;
-    private double durationAverage;
-    private double tempoAverage;
-    private double hotnessLoudness;
-    private double hotnessDuration;
-    private double hotnessTempo;
+    private double listAAverage;
+    private double listBAverage;
+    private double aBCorrelation;
 
-    public PearsonCorrelation(LinkedList<Double> hotness, LinkedList<Double> loudness,
-                              LinkedList<Double> duration, LinkedList<Double> tempo) {
-        hotnessList = hotness;
-        loudnessList = loudness;
-        durationList = duration;
-        tempoList = tempo;
+    public PearsonCorrelation() {
+
     }
 
-    public void calculateAverages() {
-        hotnessAverage = averageForAList(hotnessList);
-        loudnessAverage = averageForAList(loudnessList);
-        durationAverage = averageForAList(durationList);
-        tempoAverage = averageForAList(tempoList);
-    }
-
-    public String getCorrelations() {
+    public String getCorrelations(LinkedList<Double> listA, String variableA,
+                                  LinkedList<Double> listB, String variableB) {
         StringBuilder correlations = new StringBuilder();
-        hotnessLoudness = correlationFromList(hotnessList, hotnessAverage, loudnessList, loudnessAverage);
-        hotnessDuration = correlationFromList(hotnessList, hotnessAverage, durationList, durationAverage);
-        hotnessTempo = correlationFromList(hotnessList, hotnessAverage, tempoList, tempoAverage);
 
-        correlations.append("Hotness:Loudness correlation: ").append(hotnessLoudness).append("\n");
-        correlations.append("Hotness:Duration correlation: ").append(hotnessDuration).append("\n");
-        correlations.append("Hotness:Tempo correlation: ").append(hotnessTempo).append("\n");
+        listAAverage = averageForAList(listA);
+        listBAverage = averageForAList(listB);
 
-        correlations.append("\n");
-        correlations.append(hotnessAverage).append("\n").append(loudnessAverage).append("\n")
-                .append(durationAverage).append("\n").append(tempoAverage);
-        correlations.append("\n\n").append(hotnessList.size()).append("\n").append(tempoList.size());
+        aBCorrelation = correlationFromList(listA, listAAverage, listB, listBAverage);
+
+        correlations.append(variableA).append(":").append(variableB)
+                .append(" correlation: ").append(aBCorrelation).append("\n");
+
         return correlations.toString();
     }
 
@@ -77,7 +54,6 @@ public class PearsonCorrelation {
         TreeMap<Integer, Double> subtractedBMap = new TreeMap<>();
 
         TreeMap<Integer, Double> intermediateAMap = new TreeMap<>();
-        TreeMap<Integer, Double> intermediateBMap = new TreeMap<>();
 
         int i = 0;
         for (Double element : originList) {
@@ -91,7 +67,6 @@ public class PearsonCorrelation {
         for (Double destDouble : destList) {
             double subtracted = destDouble - destMean;
             subtractedBMap.put(j, subtracted);
-            intermediateBMap.put(j, destDouble);
             j++;
         }
 
@@ -107,10 +82,15 @@ public class PearsonCorrelation {
 
         double totalATimesB = 0.0;
         for (Integer index : intermediateAMap.keySet()) {
-            double a = subtractedAMap.get(index);
-            double b = subtractedBMap.get(index);
+            try {
+                double a = subtractedAMap.get(index);
+                double b = subtractedBMap.get(index);
 
-            totalATimesB += (a * b);
+                totalATimesB += (a * b);
+            } catch (NullPointerException ignored) {
+
+            }
+
         }
 
         return totalATimesB/(Math.sqrt(totalSquareA * totalSquareB));
